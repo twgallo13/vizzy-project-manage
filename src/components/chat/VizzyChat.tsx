@@ -129,8 +129,8 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw]">
-        <DialogHeader>
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw] overflow-hidden">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
             Chat with Vizzy
@@ -138,7 +138,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
         </DialogHeader>
 
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="mb-4">
+          <div className="mb-4 flex-shrink-0">
             <div className="flex flex-wrap gap-1">
               {mockCommands.map((command) => (
                 <Button
@@ -154,7 +154,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             </div>
           </div>
 
-          <ScrollArea className="flex-1 pr-2">
+          <ScrollArea className="flex-1 pr-2 overflow-y-auto">
             <div className="space-y-4 pb-4">
               {messages?.map((message) => (
                 <div
@@ -170,13 +170,13 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
                   )}
                   
                   <div
-                    className={`min-w-0 max-w-[75%] sm:max-w-[70%] p-2 sm:p-3 rounded-lg ${
+                    className={`min-w-0 max-w-[85%] sm:max-w-[75%] p-2 sm:p-3 rounded-lg overflow-hidden ${
                       message.type === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     }`}
                   >
-                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere hyphens-auto">{message.content}</div>
+                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap word-break-break-word">{message.content}</div>
                     {message.command && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         {message.command}
@@ -209,7 +209,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 pt-4 border-t">
+          <div className="flex gap-2 pt-4 border-t flex-shrink-0">
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}

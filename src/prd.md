@@ -2,260 +2,161 @@
 
 ## Core Purpose & Success
 
-**Mission Statement**: Vizzy is an AI-powered marketing planning and analytics platform that empowers marketing teams to plan, execute, and optimize campaigns through intelligent insights and seamless workflow integration.
+**Mission Statement**: Vizzy is an AI-powered marketing planning and analytics platform that helps marketing teams optimize campaigns, analyze performance data, and make data-driven decisions through conversational AI assistance.
 
-**Success Indicators**: 
-- Campaign planning efficiency improved by 40%
-- Marketing ROI visibility increased through comprehensive analytics
-- Team collaboration enhanced through centralized activity management
-- Data-driven decision making accelerated through AI insights
+**Success Indicators**:
+- Users can complete campaign planning workflows 50% faster
+- Data import and analysis reduces manual work by 75%
+- AI chat resolution rate above 85% for common queries
+- Mobile engagement matches desktop functionality
 
-**Experience Qualities**: Intelligent, Efficient, Collaborative
+**Experience Qualities**: Intelligent, Efficient, Intuitive
 
 ## Project Classification & Approach
 
-**Complexity Level**: Complex Application - Advanced functionality with multiple integrated features, user management, AI integration, and data analytics capabilities.
+**Complexity Level**: Complex Application (advanced functionality, user management, AI integration)
 
-**Primary User Activity**: Creating and Interacting - Users actively plan campaigns, analyze data, collaborate on activities, and leverage AI insights for marketing optimization.
+**Primary User Activity**: Creating and Interacting (campaign creation, data analysis, AI conversations)
 
-## Thought Process for Feature Selection
+## Core Problem Analysis
 
-**Core Problem Analysis**: Marketing teams struggle with fragmented tools, lack of intelligent insights, poor collaboration, and difficulty in measuring campaign effectiveness. Vizzy addresses these pain points through a unified, AI-enhanced platform.
-
-**User Context**: Marketing professionals use Vizzy daily for campaign planning, performance monitoring, team coordination, and strategic decision-making. The platform serves both individual contributors and team leaders.
-
-**Critical Path**: User logs in → Reviews dashboard KPIs → Plans activities in weekly planner → Collaborates with AI assistant → Exports data for reporting → Manages team access
-
-**Key Moments**: 
-1. AI-powered insights during campaign planning
-2. Real-time performance visualization on dashboard  
-3. Seamless data export for external tool integration
+Marketing teams struggle with:
+- Fragmented data across multiple platforms (GA4, Meta, ESP, Wrike)
+- Time-intensive manual campaign planning and reporting
+- Lack of predictive insights for campaign optimization
+- Complex tools that require extensive training
 
 ## Essential Features
 
-### 1. AI-Powered Assistant (Vizzy Chat)
-- **Functionality**: Natural language interface for data analysis, campaign optimization, scenario simulation, and strategic recommendations
-- **Purpose**: Democratize data insights and accelerate decision-making through conversational AI
-- **Success Criteria**: Users can get actionable insights within seconds through natural language queries
+### 1. Vizzy Chat Control Panel
+- **Functionality**: AI assistant with commands (/explain, /simulate, /set, /whatif, /export, /status)
+- **Purpose**: Provide natural language interface for complex marketing operations
+- **Success Criteria**: Users can complete 80% of tasks through chat interface
 
-### 2. Interactive Dashboard
-- **Functionality**: Real-time KPI monitoring, campaign performance visualization, trend analysis with D3.js charts
-- **Purpose**: Provide immediate visibility into marketing performance and identify optimization opportunities
-- **Success Criteria**: Key metrics are visible at-a-glance with drill-down capabilities for detailed analysis
+### 2. Mobile-First Weekly Planner
+- **Functionality**: Interactive weekly calendar with KPI cards, activity tracking, swipe gestures
+- **Purpose**: Enable campaign planning on mobile devices with full desktop functionality
+- **Success Criteria**: Works seamlessly on 6" screens with touch interactions
 
-### 3. Intelligent Weekly Planner
-- **Functionality**: Drag-and-drop activity management, priority-based scheduling, team assignment, progress tracking
-- **Purpose**: Centralize marketing activities and improve team coordination
-- **Success Criteria**: Teams can plan, track, and execute marketing activities 50% faster
+### 3. Data Import & Integration Hub
+- **Functionality**: CSV intake center with mapping wizard, API connectors for GA4/Meta/ESP
+- **Purpose**: Centralize marketing data from multiple sources
+- **Success Criteria**: Import success rate >95%, mapping accuracy >90%
 
-### 4. Comprehensive Data Export
-- **Functionality**: Multi-format exports (Excel, CSV, JSON, PDF) with date range filtering and data type selection
-- **Purpose**: Enable seamless integration with external tools like Wrike, analytics platforms, and executive reporting
-- **Success Criteria**: Data can be exported in required formats within 30 seconds
+### 4. Wrike Export System
+- **Functionality**: XLSX export with optional API integration, duplicate prevention
+- **Purpose**: Seamless integration with existing project management workflows
+- **Success Criteria**: Zero manual intervention for standard exports
 
-### 5. Advanced User Management
-- **Functionality**: Role-based access control, user permissions, activity tracking, team administration
-- **Purpose**: Ensure secure collaboration and appropriate access levels across marketing teams
-- **Success Criteria**: Administrators can manage team access efficiently with granular permission control
+### 5. User & Role Management
+- **Functionality**: CRUD operations, MFA support, skill tracking, Wrike name validation
+- **Purpose**: Secure multi-user collaboration with appropriate permissions
+- **Success Criteria**: Role-based access works without security vulnerabilities
 
-### 6. CSV Data Import Center
-- **Functionality**: Intelligent CSV parsing and mapping with support for multiple marketing data sources (GA4, Meta, Google Ads, email platforms)
-- **Purpose**: Streamline data ingestion from various marketing platforms with guided mapping and validation
-- **Success Criteria**: Users can import marketing data from major platforms within 5 minutes with 95% mapping accuracy
-
-### 7. System Administration
-- **Functionality**: AI provider configuration, brand customization, security settings, audit logging
-- **Purpose**: Enable platform customization and maintain security standards
-- **Success Criteria**: System administrators can configure and maintain the platform without technical expertise
+### 6. AI Settings & Model Routing
+- **Functionality**: API key management, model selection, cost controls, fallback routing
+- **Purpose**: Ensure reliable AI functionality with cost optimization
+- **Success Criteria**: 99.9% AI availability with automatic fallbacks
 
 ## Design Direction
 
 ### Visual Tone & Identity
-**Emotional Response**: The design should evoke confidence, efficiency, and intelligence. Users should feel empowered and supported by the platform's capabilities.
-
-**Design Personality**: Modern, professional, and approachable. The interface feels sophisticated yet accessible, with subtle AI-enhanced elements that suggest intelligence without being overwhelming.
-
-**Visual Metaphors**: Clean data visualizations, smooth transitions suggesting AI processing, and collaborative elements that emphasize teamwork.
-
-**Simplicity Spectrum**: Balanced complexity - sophisticated functionality presented through intuitive, uncluttered interfaces.
+- **Emotional Response**: Professional confidence with approachable intelligence
+- **Design Personality**: Clean, modern, data-driven yet human-friendly
+- **Visual Metaphors**: Data visualization, conversation bubbles, workflow connectors
+- **Simplicity Spectrum**: Minimal interface with progressive disclosure of advanced features
 
 ### Color Strategy
-**Color Scheme Type**: Monochromatic with strategic accent colors
-
-**Primary Color**: Deep blue (oklch(0.45 0.12 250)) - Communicates trust, professionalism, and intelligence
-**Secondary Colors**: Light blue variations for hierarchy and depth
-**Accent Color**: Warm orange (oklch(0.68 0.15 50)) - Used for CTAs and important notifications
-**Color Psychology**: Blue establishes trust and reliability essential for data platforms, while orange accents create energy and encourage action
-**Color Accessibility**: All color combinations meet WCAG AA contrast ratios (4.5:1 minimum)
-
-**Foreground/Background Pairings**:
-- Background (oklch(0.98 0.01 250)) → Foreground (oklch(0.25 0.12 250)) [Contrast: 17.2:1]
-- Primary (oklch(0.45 0.12 250)) → Primary-foreground (oklch(1 0 0)) [Contrast: 9.4:1]  
-- Card (oklch(1 0 0)) → Card-foreground (oklch(0.25 0.12 250)) [Contrast: 16.8:1]
-- Accent (oklch(0.68 0.15 50)) → Accent-foreground (oklch(1 0 0)) [Contrast: 4.9:1]
+- **Color Scheme Type**: Analogous with complementary accent
+- **Primary Color**: Deep blue (oklch(0.45 0.12 250)) - conveys trust and professionalism
+- **Secondary Colors**: Light blue-grays for supporting elements
+- **Accent Color**: Warm amber (oklch(0.68 0.15 50)) - highlights important actions
+- **Color Psychology**: Blue builds trust, amber creates urgency for CTAs
+- **Foreground/Background Pairings**: 
+  - Primary text on background: oklch(0.25 0.12 250) on oklch(0.98 0.01 250) - 4.8:1 contrast
+  - Primary button text: white on blue - 4.5:1 contrast
+  - Accent button text: white on amber - 4.5:1 contrast
 
 ### Typography System
-**Font Pairing Strategy**: Single-family approach with Inter for all text elements, complemented by JetBrains Mono for code/data display
-
-**Typographic Hierarchy**: 
-- Headlines: Inter 600 weight, larger scale ratios
-- Body text: Inter 400 weight, optimized line height (1.6)
-- UI elements: Inter 500 weight for emphasis
-- Data/Code: JetBrains Mono for technical content
-
-**Font Personality**: Inter conveys clarity and modernity while maintaining excellent readability across all sizes
-**Readability Focus**: Line heights optimized for scanning data, comfortable reading lengths, appropriate size scaling
-**Typography Consistency**: Consistent weight and spacing patterns across all UI elements
-
-**Which fonts**: Inter (primary), JetBrains Mono (monospace)
-**Legibility Check**: Both fonts tested for clarity at small sizes and high information density scenarios
+- **Font Pairing Strategy**: Inter for UI text, JetBrains Mono for code/data
+- **Typographic Hierarchy**: Bold headlines (24px), medium subheads (18px), regular body (14px)
+- **Font Personality**: Inter conveys modern professionalism, mono font ensures data readability
+- **Which fonts**: Inter (400, 500, 600, 700), JetBrains Mono (400, 600)
+- **Legibility Check**: Both fonts tested for accessibility compliance
 
 ### Visual Hierarchy & Layout
-**Attention Direction**: Clear visual paths guide users from KPIs → detailed charts → action items
-**White Space Philosophy**: Generous spacing creates breathing room around dense data visualizations
-**Grid System**: 12-column responsive grid with consistent gutters and breakpoints
-**Responsive Approach**: Mobile-first design with progressive enhancement for desktop capabilities
-**Content Density**: Balanced information display - detailed enough for insights, clean enough for quick scanning
+- **Attention Direction**: F-pattern layout guides eye from KPIs to actions to details
+- **White Space Philosophy**: Generous spacing (16px/24px/32px grid) creates breathing room
+- **Grid System**: 12-column responsive grid with consistent breakpoints
+- **Responsive Approach**: Mobile-first design with progressive enhancement
+- **Content Density**: Dense data tables on desktop, card-based layouts on mobile
 
 ### Animations
-**Purposeful Meaning**: Subtle animations indicate AI processing, data loading, and state changes
-**Hierarchy of Movement**: Critical actions (AI responses, data updates) receive priority animation treatment
-**Contextual Appropriateness**: Professional, subtle motion that enhances rather than distracts from data analysis
+- **Purposeful Meaning**: Subtle fade-ins communicate data loading, slide transitions show navigation flow
+- **Hierarchy of Movement**: Primary actions get micro-interactions, navigation uses smooth transitions
+- **Contextual Appropriateness**: Professional animations that enhance rather than distract
 
 ### UI Elements & Component Selection
-**Component Usage**: 
-- Shadcn components for consistency and accessibility
-- Cards for data grouping and hierarchy
-- Tables for detailed data display
-- Dialogs for focused task completion
-- Charts (D3.js) for data visualization
+- **Component Usage**: Shadcn v4 components provide consistent, accessible foundation
+- **Component Customization**: Custom KPI cards, chat interface, weekly planner components
+- **Component States**: Hover, active, disabled, loading states for all interactive elements
+- **Icon Selection**: Phosphor icons for consistent visual language
+- **Spacing System**: 4px base unit with 2x multipliers (8px, 16px, 24px, 32px)
+- **Mobile Adaptation**: Touch-friendly 44px minimum targets, swipe gestures, drawer navigation
 
-**Component Customization**: Tailwind utilities for brand-specific styling while maintaining component functionality
-**Component States**: Clear interactive states for all controls, with loading and success indicators
-**Icon Selection**: Phosphor icons for their clarity and consistency at small sizes
-**Component Hierarchy**: Primary actions emphasized through color and size, secondary actions appropriately subdued
-
-### Visual Consistency Framework
-**Design System Approach**: Component-based system with shared design tokens
-**Style Guide Elements**: Color, typography, spacing, and interaction patterns documented through code
-**Visual Rhythm**: Consistent spacing scale (4px base) and component proportions
-**Brand Alignment**: Professional blue palette reinforces trustworthiness essential for data platforms
-
-### Accessibility & Readability  
-**Contrast Goal**: WCAG AA compliance achieved across all color combinations with preference for AAA when possible
+### Accessibility & Readability
+- **Contrast Goal**: WCAG AA compliance minimum (4.5:1 for normal text, 3:1 for large text)
+- All interactive elements keyboard accessible
+- Screen reader compatible with proper ARIA labels
+- Color-blind friendly palette with non-color dependent indicators
 
 ## Implementation Considerations
 
-**Scalability Needs**: 
-- Modular component architecture supports feature expansion
-- AI provider abstraction enables multiple model integration
-- Data export system designed for additional format support
+### Technical Architecture
+- **Frontend**: React with TypeScript, Tailwind CSS, Shadcn components
+- **State Management**: Spark KV for persistence, React state for UI
+- **AI Integration**: Spark LLM API with OpenAI/Gemini routing
+- **Mobile Support**: Progressive Web App capabilities
 
-**Testing Focus**: 
-- AI response accuracy and relevance
-- Chart rendering performance with large datasets  
-- Export functionality across different data sizes
-- User permission and security controls
+### Performance Targets
+- **Time to Interactive**: < 2.5 seconds
+- **Mobile Performance**: 90+ Lighthouse score
+- **API Response**: < 500ms for standard queries
+- **Data Processing**: < 2s for CSV imports up to 10k rows
 
-**Critical Questions**: 
-- How to maintain AI response quality as usage scales?
-- What's the optimal balance between AI automation and user control?
-- How to ensure data security while enabling collaboration?
+### Security & Privacy
+- **Authentication**: Firebase Auth with MFA support
+- **API Keys**: Secure storage in Firebase Secrets
+- **Data Retention**: Configurable (default 180 days)
+- **RBAC**: Role-based access control throughout
 
 ## Edge Cases & Problem Scenarios
 
-**Potential Obstacles**:
-- AI service outages requiring fallback functionality
-- Large dataset exports causing performance issues
-- Complex permission scenarios in enterprise environments
-- Integration challenges with existing marketing tools
+### Data Import Issues
+- **Large files**: Progress indicators, chunked processing
+- **Malformed data**: Clear error messages with correction guidance
+- **API failures**: Automatic retries with exponential backoff
 
-**Edge Case Handling**:
-- Graceful degradation when AI services are unavailable
-- Progressive data loading for large datasets
-- Clear error messaging with recovery actions
-- Flexible permission system accommodating various organizational structures
+### AI Service Disruptions
+- **Primary model down**: Automatic fallback to secondary model
+- **All models down**: Graceful degradation with cached responses
+- **Rate limiting**: Queue management with user feedback
 
-**Technical Constraints**:
-- Browser-based limitations for large data processing
-- API rate limits for AI services
-- Storage constraints for cached data
-- Performance considerations for real-time updates
-
-## Current Implementation Status
-
-### Completed Features
-✅ **Core Dashboard**: Interactive KPIs with real-time data visualization
-✅ **AI Assistant**: Integrated chat with GPT-4 for marketing insights  
-✅ **Weekly Planner**: Complete activity management with drag-and-drop interface
-✅ **User Management**: Full RBAC system with team administration
-✅ **Data Export**: Multi-format exports with filtering and customization
-✅ **Admin Panel**: System configuration with AI provider management
-✅ **CSV Data Import**: Comprehensive data intake center with intelligent mapping and validation
-✅ **Data Source Integration**: Support for GA4, Meta Business, Google Ads, Hootsuite, and product feeds
-✅ **Import History & Tracking**: Complete audit trail of data imports with error reporting
-✅ **Responsive Design**: Mobile-optimized interface with adaptive layouts
-✅ **Data Visualization**: D3.js charts for campaign performance tracking
-✅ **Advanced Analytics**: AI-powered insights and trend analysis
-✅ **Campaign Performance**: Detailed campaign metrics and optimization suggestions
-✅ **Predictive Insights**: Machine learning-based forecasts and recommendations
-✅ **Interactive Charts**: Advanced data visualization with multiple chart types
-✅ **Integration Management**: Connected systems for Wrike, GA4, Meta, and more
-✅ **Heatmap Analytics**: User engagement patterns and timing analysis
-✅ **Seasonal Forecasting**: Historical trend analysis with confidence intervals
-
-### Advanced Features Implemented
-✅ **AI-Powered Campaign Analysis**: Real-time insights with confidence scoring
-✅ **Predictive Modeling**: Future performance forecasting with multiple scenarios
-✅ **Budget Optimization**: Automated budget allocation recommendations
-✅ **Creative Fatigue Detection**: AI monitoring of ad performance degradation
-✅ **Multi-Platform Comparison**: Cross-platform campaign performance analysis
-✅ **Engagement Heatmaps**: Time-based user activity visualization
-✅ **Correlation Analysis**: Metric relationship discovery and insights
-✅ **Risk Assessment**: Proactive identification of campaign performance risks
-✅ **Opportunity Detection**: AI-driven identification of growth opportunities
-✅ **Integration Ecosystem**: Comprehensive third-party tool connectivity
-
-### Technical Architecture
-- **Frontend**: React with TypeScript for type safety
-- **Styling**: Tailwind CSS with custom design system
-- **Components**: Shadcn UI components for consistency
-- **State Management**: React hooks with persistent storage via useKV
-- **Charts**: D3.js for advanced data visualization
-- **AI Integration**: OpenAI GPT models through Spark API
-- **Icons**: Phosphor icon library
-- **Build System**: Vite for fast development and building
-- **Data Visualization**: Multiple chart types including line, area, bar, and heatmaps
-- **Predictive Analytics**: Machine learning integration for forecasting
-- **Real-time Insights**: Live data processing and analysis
-
-### Key Integrations
-- **Spark Runtime API**: For AI capabilities and persistent storage
-- **useKV Hook**: For reactive state management with persistence
-- **Real-time Updates**: Component state synchronization
-- **Export System**: Multiple format support with progress tracking
-- **AI Provider Management**: Multi-model AI integration with fallbacks
-- **Third-party Platforms**: Wrike, Google Analytics, Meta Business, Slack
-- **Data Processing**: Advanced analytics and correlation analysis
-- **Visualization Engine**: D3.js for complex interactive charts
+### Mobile Connectivity
+- **Offline support**: Cache critical data locally
+- **Slow connections**: Optimistic UI updates
+- **Small screens**: Responsive design with drawer navigation
 
 ## Reflection
 
-**What makes this approach uniquely suited**: The combination of AI-powered insights with traditional marketing planning tools creates a platform that enhances human decision-making rather than replacing it. The conversational AI interface democratizes data analysis while preserving the collaborative aspects of marketing planning.
+**Unique Approach**: Vizzy combines conversational AI with traditional marketing tools, making complex analytics accessible through natural language while maintaining professional-grade functionality.
 
-**Assumptions to challenge**: 
-- Are all marketing teams ready for AI-assisted planning?
-- Will the current AI model capabilities meet diverse marketing use cases?
-- Can the platform scale to enterprise-level data volumes?
+**Key Assumptions**:
+- Users prefer chat interfaces for complex tasks
+- Mobile-first design won't compromise desktop functionality  
+- AI can handle 80%+ of routine marketing queries
 
-**What would make this solution truly exceptional**: 
-- ✅ Predictive campaign performance modeling (IMPLEMENTED)
-- ✅ Automated competitive analysis integration (IMPLEMENTED) 
-- Real-time collaboration features for distributed teams
-- ✅ Advanced integration ecosystem with major marketing tools (IMPLEMENTED)
-- ✅ Machine learning-driven optimization recommendations (IMPLEMENTED)
-- ✅ Advanced data visualization and correlation analysis (IMPLEMENTED)
-- ✅ Proactive risk detection and opportunity identification (IMPLEMENTED)
-- ✅ Multi-dimensional campaign performance analysis (IMPLEMENTED)
-
-The current implementation provides a comprehensive foundation for intelligent marketing planning with sophisticated AI-powered analytics, predictive modeling, and advanced data visualization capabilities. The platform now includes enterprise-grade features for campaign optimization, risk management, and strategic planning.
+**Exceptional Factors**:
+- Seamless integration between chat AI and traditional UI
+- True mobile-first design for enterprise marketing tools
+- Predictive insights that proactively surface opportunities
