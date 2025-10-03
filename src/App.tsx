@@ -12,6 +12,7 @@ import { Calendar, ChatCircle, ChartBar, Users, Gear, Upload, Download, TrendUp,
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner"
 import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
+import CampaignList from "@/components/campaigns/CampaignList"
 import { KpiCard } from "@/components/dashboard/KpiCard"
 import { CampaignChart } from "@/components/dashboard/CampaignChart"
 import { AdvancedAnalytics } from "@/components/dashboard/AdvancedAnalytics"
@@ -82,7 +83,7 @@ function App() {
       <div className="flex">
         {/* Desktop Sidebar */}
         {!isMobile && (
-          <aside className="w-64 border-r bg-card/30 min-h-[calc(100vh-64px)] p-4">
+          <aside className="w-64 border-r bg-card/30 min-h-[calc(100vh-64px)] p-4 space-y-6">
             <nav className="space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -99,6 +100,14 @@ function App() {
                 )
               })}
             </nav>
+            
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Saved Campaigns</h3>
+              <CampaignList onOpen={(id) => {
+                // TODO: load campaign into editor
+                console.log('Opening campaign:', id)
+              }} />
+            </div>
           </aside>
         )}
 
