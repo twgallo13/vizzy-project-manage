@@ -61,6 +61,26 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
       <input className="w-full rounded border p-2" value={c.name || ""} onChange={e=>setC({ ...c, name:e.target.value })} placeholder="Campaign name" />
       <textarea className="w-full rounded border p-2" value={c.objective || ""} onChange={e=>setC({ ...c, objective:e.target.value })} placeholder="Objective" />
       <input className="w-full rounded border p-2" value={(c.channels||[]).join(", ")} onChange={e=>setC({ ...c, channels:e.target.value.split(",").map((x:string)=>x.trim()).filter(Boolean) })} placeholder="channels (comma separated)" />
+      <div className="grid grid-cols-2 gap-2">
+        <div className="flex flex-col gap-1">
+          <label className="text-xs">Start Date</label>
+          <input
+            type="date"
+            className="rounded border p-2"
+            value={c.startDate || ""}
+            onChange={e => setC({ ...c, startDate: e.target.value })}
+          />
+        </div>
+        <div className="flex flex-col gap-1">
+          <label className="text-xs">End Date</label>
+          <input
+            type="date"
+            className="rounded border p-2"
+            value={c.endDate || ""}
+            onChange={e => setC({ ...c, endDate: e.target.value })}
+          />
+        </div>
+      </div>
       <select className="w-full rounded border p-2" value={c.status || "Draft"} onChange={e=>setC({ ...c, status:e.target.value })}>
         <option value="Draft">Draft</option>
         <option value="Planned">Planned</option>

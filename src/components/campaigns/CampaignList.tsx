@@ -110,6 +110,28 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
             <div className="flex items-center gap-2">
               <div className="font-medium">{c.name || "Untitled"}</div>
               {c.status && <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{c.status}</span>}
+              {(() => {
+                if (c.startDate && c.endDate) {
+                  const start = new Date(c.startDate)
+                  const end = new Date(c.endDate)
+                  const diffMs = end.getTime() - start.getTime()
+                  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+                  return <span className="text-xs px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">{diffDays} days</span>
+                } else if (c.startDate) {
+                  const start = new Date(c.startDate)
+                  const now = new Date()
+                  const diffMs = start.getTime() - now.getTime()
+                  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+                  if (diffDays > 0) {
+                    return <span className="text-xs px-1.5 py-0.5 rounded bg-orange-100 text-orange-700">starts in {diffDays}</span>
+                  } else if (diffDays === 0) {
+                    return <span className="text-xs px-1.5 py-0.5 rounded bg-green-100 text-green-700">starts today</span>
+                  } else {
+                    return <span className="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-700">started {Math.abs(diffDays)} ago</span>
+                  }
+                }
+                return null
+              })()}
             </div>
             <div className="text-xs text-muted-foreground">{new Date(c.createdAt || Date.now()).toLocaleString()}</div>
             {c.tags && c.tags.length > 0 && <div className="text-xs text-muted-foreground mt-1">{c.tags.join(", ")}</div>}
