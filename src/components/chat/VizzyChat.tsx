@@ -48,9 +48,10 @@ function formatTime(ts: Date | string | number): string {
 interface VizzyChatProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onCampaignCreated?: (campaignId: string) => void
 }
 
-export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
+export function VizzyChat({ open, onOpenChange, onCampaignCreated }: VizzyChatProps) {
   const [messages, setMessages] = useState<ChatMessage[]>(() => {
     const s = localStorage.getItem(CHAT_KEY)
     try { return s ? JSON.parse(s) : [] } catch { return [] }
@@ -180,6 +181,9 @@ Provide a helpful, conversational response focused on marketing insights and act
       // Save to store
       await persistCampaign(campaignToSave)
       
+      // Open the campaign editor automatically
+      onCampaignCreated?.(campaignToSave.id)
+      
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
       setLastCreatedCampaign(campaignToSave)
       
@@ -236,6 +240,9 @@ Provide a helpful, conversational response focused on marketing insights and act
       
       // Save to store
       await persistCampaign(campaignToSave)
+      
+      // Open the campaign editor automatically
+      onCampaignCreated?.(campaignToSave.id)
       
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
       setLastCreatedCampaign(campaignToSave)

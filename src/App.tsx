@@ -172,7 +172,11 @@ function App() {
       )}
 
       {/* Vizzy Chat Dialog */}
-      <VizzyChat open={showVizzyChat} onOpenChange={setShowVizzyChat} />
+      <VizzyChat 
+        open={showVizzyChat} 
+        onOpenChange={setShowVizzyChat}
+        onCampaignCreated={(campaignId) => setEditingCampaignId(campaignId)}
+      />
       
       {/* Campaign Editor Dialog */}
       {editingCampaignId && (
