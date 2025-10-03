@@ -129,7 +129,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
@@ -170,13 +170,13 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
                   )}
                   
                   <div
-                    className={`min-w-0 flex-1 max-w-[85%] sm:max-w-[80%] p-2 sm:p-3 rounded-lg ${
+                    className={`min-w-0 max-w-[75%] sm:max-w-[70%] p-2 sm:p-3 rounded-lg ${
                       message.type === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     }`}
                   >
-                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap">{message.content}</div>
+                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap overflow-wrap-anywhere hyphens-auto">{message.content}</div>
                     {message.command && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         {message.command}

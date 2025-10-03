@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar, ChatCircle, ChartBar, Users, Gear, Upload, Download, TrendUp, Target, Clock } from "@phosphor-icons/react"
+import { Calendar, ChatCircle, ChartBar, Users, Gear, Upload, Download, TrendUp, Target, Clock, Database } from "@phosphor-icons/react"
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner"
 import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
@@ -18,6 +18,7 @@ import { CampaignPerformance } from "@/components/dashboard/CampaignPerformance"
 import { PredictiveInsights } from "@/components/insights/PredictiveInsights"
 import { InteractiveCharts } from "@/components/charts/InteractiveCharts"
 import { UserManagement } from "@/components/users/UserManagement"
+import { CsvIntakeCenter } from "@/components/csv/CsvIntakeCenter"
 import { DataExporter } from "@/components/export/DataExporter"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
@@ -37,6 +38,7 @@ function App() {
   const navigation = [
     { id: "dashboard", label: "Dashboard", icon: ChartBar },
     { id: "planner", label: "Planner", icon: Calendar },
+    { id: "data", label: "Data Import", icon: Database },
     { id: "users", label: "Users", icon: Users },
     { id: "admin", label: "Admin", icon: Gear }
   ]
@@ -102,7 +104,7 @@ function App() {
         <main className="flex-1 p-4 lg:p-6">
           {isMobile ? (
             <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-              <TabsList className="grid w-full grid-cols-4">
+              <TabsList className="grid w-full grid-cols-5">
                 {navigation.map((item) => {
                   const Icon = item.icon
                   return (
@@ -122,6 +124,10 @@ function App() {
                 <WeeklyPlanner />
               </TabsContent>
               
+              <TabsContent value="data">
+                <CsvIntakeCenter />
+              </TabsContent>
+              
               <TabsContent value="users">
                 <UserManagement />
               </TabsContent>
@@ -134,6 +140,7 @@ function App() {
             <div>
               {activeTab === "dashboard" && <DashboardContent kpis={mockKpis} />}
               {activeTab === "planner" && <WeeklyPlanner />}
+              {activeTab === "data" && <CsvIntakeCenter />}
               {activeTab === "users" && <UserManagement />}
               {activeTab === "admin" && <AdminPanel />}
             </div>
