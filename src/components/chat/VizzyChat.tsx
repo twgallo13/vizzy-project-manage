@@ -1,16 +1,21 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
+import { Button } from "@/components/ui/button"
 import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 
-// Global spark API is available
-declare const spark: {
-  llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
-  llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
+declare global {
+  interface Window {
+    spark: {
+      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
+      llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
+    }
+  }
 }
+
+const spark = window.spark
 
 interface ChatMessage {
   id: string
@@ -26,9 +31,9 @@ interface VizzyChatProps {
 }
 
 export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
+  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -37,8 +42,7 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
       id: Date.now().toString(),
       type: "user",
       content: input.trim(),
-      timestamp: new Date(),
-      command: input.startsWith("/") ? input.split(" ")[0] : undefined
+      timestamp: new Date()
     }
 
     setMessages(prev => [...(prev || []), userMessage])
@@ -47,22 +51,19 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
 
     try {
       // Use the global spark API
-      const userInput = input.trim()
-      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. The user said: ${userInput}
+      const prompt = spark.llmPrompt`You are Vizzy, a helpful AI marketing assistant. The user said: ${input.trim()}
 
 Available commands:
-- /explain: Explain marketing data and metrics
 - /simulate: Run campaign simulations
-- /whatif: Explore scenario planning
-- /set: Set up campaigns or configurations
-- /export: Export data in various formats
+- /analyze: Analyze performance data
+- /optimize: Suggest optimizations
 - /status: Show current campaign status
+- /explain: Explain marketing concepts
 
-Context: This is a marketing analytics platform where users manage campaigns, analyze performance data, and get insights. Users can import CSV data, view KPIs like ROI (324%), active campaigns (23), and weekly reach (2.4M).
+Context: This is a marketing analytics platform called Vizzy.
+Provide a helpful, conversational response focused on marketing insights and actionable advice.`
 
-Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it and explain what you can help with. Keep responses practical and actionable.`
-
-      const response = await spark.llm(prompt, "gpt-4o-mini")
+      const response = await spark.llm(prompt)
       
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -73,7 +74,6 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
 
       setMessages(prev => [...(prev || []), assistantMessage])
     } catch (error) {
-      console.error("Chat error:", error)
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
@@ -182,7 +182,6 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             onClick={handleSend}
             disabled={!input.trim() || isLoading}
             size="sm"
-            className="h-[44px]"
           >
             <PaperPlaneRight className="w-4 h-4" />
           </Button>
