@@ -1,6 +1,8 @@
 // API handler for AI campaign creation
 // Mock implementation for Vite development - would be replaced with real API in production
 
+import { buildCampaignPrompt } from "@/lib/ai/promptTemplates"
+
 export async function handleCampaignAIRequest(request: Request): Promise<Response> {
   try {
     // Check for OPENAI_API_KEY
@@ -18,8 +20,16 @@ export async function handleCampaignAIRequest(request: Request): Promise<Respons
     const body = await request.json()
     const { brief, constraints } = body
 
+    // Build governance-aware prompt for AI
+    const prompt = buildCampaignPrompt(brief, constraints)
+    
     // Simulate AI campaign creation for now
-    // In a real implementation, this would call OpenAI API
+    // In a real implementation, this would call OpenAI API with the prompt:
+    // const aiResponse = await openai.chat.completions.create({
+    //   model: "gpt-4",
+    //   messages: [{ role: "user", content: prompt }]
+    // })
+    
     const campaign = {
       id: `camp_${Date.now()}`,
       name: `AI Campaign: ${brief.slice(0, 30)}...`,
