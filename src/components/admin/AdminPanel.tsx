@@ -12,6 +12,7 @@ import { Key, Palette, Upload, Shield, FileText } from "@phosphor-icons/react"
 import { Activity } from "lucide-react"
 import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
+import { StoreRegistry } from "../stores/StoreRegistry"
 
 interface AIProvider {
   name: string
@@ -117,11 +118,12 @@ export function AdminPanel() {
       </Card>
 
       <Tabs defaultValue="ai-settings" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="stores">Stores</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
 
@@ -382,6 +384,10 @@ export function AdminPanel() {
               </Alert>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="stores">
+          <StoreRegistry />
         </TabsContent>
 
         <TabsContent value="audit">
