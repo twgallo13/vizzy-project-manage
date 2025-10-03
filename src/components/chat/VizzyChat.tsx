@@ -37,6 +37,7 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successCampaign, setSuccessCampaign] = useState<{ name: string } | null>(null)
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -102,16 +103,24 @@ Provide a helpful, conversational response focused on marketing insights and act
 
     setLoading(true)
     setError(null)
+    setSuccessCampaign(null)
 
     try {
       const campaign = await createCampaignWithAI(input.trim())
       console.log("AI Campaign created:", campaign)
+      setSuccessCampaign({ name: campaign?.name || "New Campaign" })
       setInput("")
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create campaign")
     } finally {
       setLoading(false)
     }
+  }
+
+  const resetForm = () => {
+    setError(null)
+    setSuccessCampaign(null)
+    setInput("")
   }
 
   return (
@@ -194,6 +203,18 @@ Provide a helpful, conversational response focused on marketing insights and act
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
               {error}
+            </div>
+          )}
+          
+          {successCampaign && (
+            <div className="text-sm text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center justify-between">
+              <span>✓ Campaign "{successCampaign.name}" created successfully!</span>
+              <button
+                onClick={resetForm}
+                className="text-green-600 hover:text-green-800 text-xs underline ml-2"
+              >
+                Create another
+              </button>
             </div>
           )}
           
