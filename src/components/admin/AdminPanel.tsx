@@ -8,8 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Key, Palette, Upload, Shield, FileText } from "@phosphor-icons/react"
-import { Activity } from "lucide-react"
+import { Key, Palette, Upload, Shield, FileText, ChartBar } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
 import { StoreRegistry } from "../stores/StoreRegistry"
@@ -365,7 +364,7 @@ export function AdminPanel() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Activity className="w-5 h-5" />
+                <ChartBar className="w-5 h-5" />
                 Audit Log
               </CardTitle>
             </CardHeader>
