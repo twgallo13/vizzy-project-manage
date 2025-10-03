@@ -8,9 +8,11 @@ import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Key, Palette, Upload, Shield, FileText, Activity } from "@phosphor-icons/react"
+import { Key, Palette, Upload, Shield, FileText } from "@phosphor-icons/react"
+import { Activity } from "lucide-react"
 import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
+import { StoreRegistry } from "../stores/StoreRegistry"
 
 interface AIProvider {
   name: string
@@ -72,14 +74,6 @@ export function AdminPanel() {
     }))
   }
 
-  const setupChecklist = [
-    { id: "branding", label: "Upload logo and set brand colors", completed: !!brandSettings?.logo },
-    { id: "ai-keys", label: "Configure AI provider keys", completed: Object.values(aiProviders || {}).some(p => p.status === "connected") },
-    { id: "routing", label: "Set up model routing preferences", completed: false },
-    { id: "security", label: "Configure authentication and MFA", completed: false },
-    { id: "wrike", label: "Test Wrike export functionality", completed: false }
-  ]
-
   return (
     <div className="space-y-6">
       <div>
@@ -87,40 +81,13 @@ export function AdminPanel() {
         <p className="text-muted-foreground">Manage system settings and configuration</p>
       </div>
 
-      {/* Setup Checklist */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <FileText className="w-5 h-5" />
-            Setup Checklist
-          </CardTitle>
-          <CardDescription>
-            Complete these steps to fully configure Vizzy
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {setupChecklist.map((item) => (
-            <div key={item.id} className="flex items-center gap-3">
-              <div className={`w-4 h-4 rounded-full border-2 ${
-                item.completed ? "bg-green-500 border-green-500" : "border-gray-300"
-              }`}>
-                {item.completed && <div className="w-full h-full rounded-full bg-white scale-50" />}
-              </div>
-              <span className={item.completed ? "text-muted-foreground line-through" : ""}>
-                {item.label}
-              </span>
-              {item.completed && <Badge variant="secondary" className="ml-auto">Done</Badge>}
-            </div>
-          ))}
-        </CardContent>
-      </Card>
-
       <Tabs defaultValue="ai-settings" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="ai-settings">AI Settings</TabsTrigger>
           <TabsTrigger value="theme">Theme</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
           <TabsTrigger value="integrations">Integrations</TabsTrigger>
+          <TabsTrigger value="stores">Stores</TabsTrigger>
           <TabsTrigger value="audit">Audit Log</TabsTrigger>
         </TabsList>
 
@@ -381,6 +348,10 @@ export function AdminPanel() {
               </Alert>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="stores">
+          <StoreRegistry />
         </TabsContent>
 
         <TabsContent value="audit">
