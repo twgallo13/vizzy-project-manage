@@ -13,6 +13,7 @@ import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner"
 import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
 import CampaignList from "@/components/campaigns/CampaignList"
+import CampaignEditor from "@/components/campaigns/CampaignEditor"
 import { KpiCard } from "@/components/dashboard/KpiCard"
 import { CampaignChart } from "@/components/dashboard/CampaignChart"
 import { AdvancedAnalytics } from "@/components/dashboard/AdvancedAnalytics"
@@ -34,6 +35,7 @@ interface User {
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showVizzyChat, setShowVizzyChat] = useState(false)
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null)
   const [user] = useKV<User>("current-user", { name: "Marketing Manager", role: "admin", isOwner: true })
   const isMobile = useIsMobile()
 
@@ -104,8 +106,7 @@ function App() {
             <div className="border-t pt-4">
               <h3 className="text-sm font-medium text-muted-foreground mb-3">Saved Campaigns</h3>
               <CampaignList onOpen={(id) => {
-                // TODO: load campaign into editor
-                console.log('Opening campaign:', id)
+                setEditingCampaignId(id)
               }} />
             </div>
           </aside>
@@ -172,6 +173,21 @@ function App() {
 
       {/* Vizzy Chat Dialog */}
       <VizzyChat open={showVizzyChat} onOpenChange={setShowVizzyChat} />
+      
+      {/* Campaign Editor Dialog */}
+      {editingCampaignId && (
+        <Dialog open={!!editingCampaignId} onOpenChange={() => setEditingCampaignId(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Campaign</DialogTitle>
+            </DialogHeader>
+            <CampaignEditor 
+              id={editingCampaignId} 
+              onClose={() => setEditingCampaignId(null)} 
+            />
+          </DialogContent>
+        </Dialog>
+      )}
       </div>
     </ErrorBoundary>
   )
