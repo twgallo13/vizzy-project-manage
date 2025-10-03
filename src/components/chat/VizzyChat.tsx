@@ -1,17 +1,21 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
 
-// Global spark API is available
-declare const spark: {
-  llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
-  llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
+declare global {
+  interface Window {
+    spark: {
+      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
+      llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
+    }
+  }
 }
+
+const spark = window.spark
 
 interface ChatMessage {
   id: string
@@ -26,27 +30,20 @@ interface VizzyChatProps {
   onOpenChange: (open: boolean) => void
 }
 
-const mockCommands = ["/explain", "/simulate", "/set", "/whatif", "/export", "/status"]
-
 export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
+  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-history", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-messages", [
-    {
-      id: "welcome",
-      type: "assistant",
-      content: "Hi! I'm Vizzy, your AI marketing assistant. I can help you explain data, simulate scenarios, set up campaigns, and more. Try typing a command like /explain or ask me anything about your marketing data!",
-      timestamp: new Date()
-    }
-  ])
+
+  const mockCommands = ["/explain", "/simulate", "/whatif", "/set", "/export", "/status"]
 
   const handleSendMessage = async () => {
-    if (!input.trim()) return
+    if (!input.trim() || isLoading) return
 
     const userMessage: ChatMessage = {
       id: Date.now().toString(),
       type: "user",
-      content: input,
+      content: input.trim(),
       timestamp: new Date(),
       command: input.startsWith("/") ? input.split(" ")[0] : undefined
     }
@@ -56,20 +53,17 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
     setIsLoading(true)
 
     try {
-      // Use real AI with Spark API
-      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. You help users with marketing data analysis, campaign planning, and performance insights.
-
-Context: You're helping with a marketing planning and analytics platform called Vizzy. Users can ask about campaigns, data analysis, or use specific commands.
+      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. The user said: "${input.trim()}"
 
 Available commands:
 - /explain: Explain marketing data and metrics
-- /simulate: Run scenario simulations  
+- /simulate: Run campaign simulations
+- /whatif: Explore scenario planning
 - /set: Set up campaigns or configurations
-- /whatif: Explore what-if scenarios
 - /export: Export data in various formats
-- /status: Show current system status
+- /status: Show current campaign status
 
-User message: ${input}
+Context: This is a marketing analytics platform where users manage campaigns, analyze performance data, and get insights. Users can import CSV data, view KPIs like ROI (324%), active campaigns (23), and weekly reach (2.4M).
 
 Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it and explain what you can help with. Keep responses practical and actionable.`
 
@@ -97,29 +91,6 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
     }
   }
 
-  const getVizzyResponse = (input: string): string => {
-    if (input.startsWith("/explain")) {
-      return "I'll explain your marketing data in simple terms. What specific metric or campaign would you like me to break down?"
-    }
-    if (input.startsWith("/simulate")) {
-      return "I can simulate different scenarios for you. What changes would you like to test? For example, budget adjustments, audience targeting, or campaign timing?"
-    }
-    if (input.startsWith("/set")) {
-      return "I can help you set up new campaigns or modify existing ones. What would you like to configure?"
-    }
-    if (input.startsWith("/whatif")) {
-      return "Great! Let's explore some what-if scenarios. What variable would you like to change and see the potential impact?"
-    }
-    if (input.startsWith("/export")) {
-      return "I can export your data in various formats. Would you like XLSX for Wrike, CSV for analysis, or a summary report?"
-    }
-    if (input.startsWith("/status")) {
-      return "Here's your current status: 23 active campaigns, 324% average ROI, 2.4M weekly reach. All systems operational!"
-    }
-    
-    return "I understand you're asking about marketing data. Could you be more specific about what you'd like to know? You can also use commands like /explain, /simulate, or /whatif for structured assistance."
-  }
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
@@ -129,8 +100,8 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw] overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw]">
+        <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
             Chat with Vizzy
@@ -138,15 +109,15 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
         </DialogHeader>
 
         <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="mb-4 flex-shrink-0">
+          <div className="mb-4">
             <div className="flex flex-wrap gap-1">
               {mockCommands.map((command) => (
                 <Button
                   key={command}
                   variant="outline"
                   size="sm"
-                  className="text-xs"
                   onClick={() => setInput(command + " ")}
+                  className="text-xs"
                 >
                   {command}
                 </Button>
@@ -154,54 +125,68 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             </div>
           </div>
 
-          <ScrollArea className="flex-1 pr-2 overflow-y-auto">
-            <div className="space-y-4 pb-4">
-              {messages?.map((message) => (
+          <ScrollArea className="flex-1 pr-4">
+            <div className="space-y-4">
+              {(!messages || messages.length === 0) && (
+                <div className="text-center text-muted-foreground py-8">
+                  <Robot className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
+                  <p className="text-sm">Hi! I'm Vizzy, your marketing AI assistant.</p>
+                  <p className="text-xs mt-1">Ask me about your campaigns, data, or use commands like /explain or /simulate</p>
+                </div>
+              )}
+              
+              {(messages || []).map((message) => (
                 <div
                   key={message.id}
-                  className={`flex items-start gap-2 sm:gap-3 ${
-                    message.type === "user" ? "justify-end" : ""
+                  className={`flex gap-3 ${
+                    message.type === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
                   {message.type === "assistant" && (
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Robot className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Robot className="w-4 h-4 text-primary" />
                     </div>
                   )}
                   
                   <div
-                    className={`min-w-0 max-w-[85%] sm:max-w-[75%] p-2 sm:p-3 rounded-lg overflow-hidden ${
+                    className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
                       message.type === "user"
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary text-primary-foreground ml-auto"
                         : "bg-muted"
                     }`}
                   >
-                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap word-break-break-word">{message.content}</div>
                     {message.command && (
-                      <Badge variant="secondary" className="mt-2 text-xs">
-                        {message.command}
-                      </Badge>
+                      <div className="text-xs opacity-70 mb-1">
+                        Command: {message.command}
+                      </div>
                     )}
+                    <div className="whitespace-pre-wrap">{message.content}</div>
+                    <div className="text-xs opacity-70 mt-1">
+                      {message.timestamp.toLocaleTimeString([], { 
+                        hour: '2-digit', 
+                        minute: '2-digit' 
+                      })}
+                    </div>
                   </div>
-
+                  
                   {message.type === "user" && (
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                      <User className="w-3 h-3 sm:w-4 sm:h-4 text-secondary-foreground" />
+                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                      <User className="w-4 h-4" />
                     </div>
                   )}
                 </div>
               ))}
-
+              
               {isLoading && (
-                <div className="flex items-start gap-2 sm:gap-3">
-                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Robot className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <div className="flex gap-3 justify-start">
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Robot className="w-4 h-4 text-primary" />
                   </div>
-                  <div className="bg-muted p-2 sm:p-3 rounded-lg">
+                  <div className="bg-muted rounded-lg px-3 py-2 text-sm">
                     <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
-                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
-                      <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: "0.2s" }} />
+                      <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
+                      <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-100" />
+                      <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-200" />
                     </div>
                   </div>
                 </div>
@@ -209,20 +194,20 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             </div>
           </ScrollArea>
 
-          <div className="flex gap-2 pt-4 border-t flex-shrink-0">
-            <Input
+          <div className="flex gap-2 pt-4 border-t">
+            <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
-              placeholder="Type a message or command..."
-              className="flex-1 min-w-0"
+              placeholder="Ask Vizzy about your campaigns, data, or use /commands..."
+              className="flex-1 min-h-[44px] max-h-32 resize-none"
               disabled={isLoading}
             />
             <Button 
-              onClick={handleSendMessage} 
+              onClick={handleSendMessage}
               disabled={!input.trim() || isLoading}
               size="sm"
-              className="flex-shrink-0"
+              className="px-3"
             >
               <PaperPlaneRight className="w-4 h-4" />
             </Button>
