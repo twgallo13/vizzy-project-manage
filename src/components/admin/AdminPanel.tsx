@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Key, Palette, Upload, Shield, FileText, Activity } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
@@ -248,15 +249,136 @@ export function AdminPanel() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="integrations">
+        <TabsContent value="integrations" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Integrations</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Upload className="w-5 h-5" />
+                Integrations
+              </CardTitle>
+              <CardDescription>
+                Connect Vizzy with your marketing tools and platforms
+              </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                Integration management will be implemented here
+            <CardContent className="space-y-6">
+              {[
+                { 
+                  name: "Wrike", 
+                  status: "connected", 
+                  description: "Export campaign data and create tasks",
+                  category: "Project Management"
+                },
+                { 
+                  name: "Google Analytics 4", 
+                  status: "disconnected", 
+                  description: "Import website and conversion data",
+                  category: "Analytics"
+                },
+                { 
+                  name: "Meta Business", 
+                  status: "connected", 
+                  description: "Sync Facebook and Instagram campaign data",
+                  category: "Advertising"
+                },
+                { 
+                  name: "Google Ads", 
+                  status: "testing", 
+                  description: "Import search and display campaign metrics",
+                  category: "Advertising"
+                },
+                { 
+                  name: "Slack", 
+                  status: "disconnected", 
+                  description: "Send campaign alerts and reports",
+                  category: "Communication"
+                },
+                { 
+                  name: "Salesforce", 
+                  status: "disconnected", 
+                  description: "Sync lead and customer data",
+                  category: "CRM"
+                }
+              ].map((integration) => (
+                <div key={integration.name} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                      <Upload className="w-6 h-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <div className="font-medium">{integration.name}</div>
+                      <div className="text-sm text-muted-foreground">{integration.description}</div>
+                      <Badge variant="outline" className="mt-1 text-xs">
+                        {integration.category}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge 
+                      variant={integration.status === "connected" ? "default" : "secondary"}
+                      className={
+                        integration.status === "connected" ? "bg-green-100 text-green-800" :
+                        integration.status === "testing" ? "bg-yellow-100 text-yellow-800" :
+                        "bg-red-100 text-red-800"
+                      }
+                    >
+                      {integration.status}
+                    </Badge>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      disabled={integration.status === "testing"}
+                    >
+                      {integration.status === "connected" ? "Configure" : 
+                       integration.status === "testing" ? "Testing..." : "Connect"}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Export Settings</CardTitle>
+              <CardDescription>Configure how data is exported to external tools</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="export-frequency">Default Export Frequency</Label>
+                  <Select defaultValue="weekly">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="daily">Daily</SelectItem>
+                      <SelectItem value="weekly">Weekly</SelectItem>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="export-format">Preferred Export Format</Label>
+                  <Select defaultValue="xlsx">
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="xlsx">Excel (.xlsx)</SelectItem>
+                      <SelectItem value="csv">CSV</SelectItem>
+                      <SelectItem value="json">JSON</SelectItem>
+                      <SelectItem value="pdf">PDF Report</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+              
+              <Alert>
+                <Upload className="h-4 w-4" />
+                <AlertDescription>
+                  Automatic exports to Wrike will be sent every Monday at 9:00 AM with weekly campaign summaries.
+                </AlertDescription>
+              </Alert>
             </CardContent>
           </Card>
         </TabsContent>

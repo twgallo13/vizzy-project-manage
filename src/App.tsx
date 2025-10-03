@@ -13,6 +13,10 @@ import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
 import { KpiCard } from "@/components/dashboard/KpiCard"
 import { CampaignChart } from "@/components/dashboard/CampaignChart"
+import { AdvancedAnalytics } from "@/components/dashboard/AdvancedAnalytics"
+import { CampaignPerformance } from "@/components/dashboard/CampaignPerformance"
+import { PredictiveInsights } from "@/components/insights/PredictiveInsights"
+import { InteractiveCharts } from "@/components/charts/InteractiveCharts"
 import { UserManagement } from "@/components/users/UserManagement"
 import { DataExporter } from "@/components/export/DataExporter"
 import { useIsMobile } from "@/hooks/use-mobile"
@@ -207,6 +211,18 @@ function DashboardContent({ kpis }: { kpis: any[] }) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Advanced Analytics Section */}
+      <AdvancedAnalytics />
+
+      {/* Campaign Performance Section */}
+      <CampaignPerformance />
+      
+      {/* Predictive Insights Section */}
+      <PredictiveInsights />
+
+      {/* Interactive Charts Section */}
+      <InteractiveCharts />
     </div>
   )
 }

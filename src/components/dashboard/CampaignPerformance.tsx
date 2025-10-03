@@ -1,0 +1,395 @@
+import { useState, useEffect, useRef } from "react"
+import * as d3 from "d3"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Progress } from "@/components/ui/progress"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { TrendUp, TrendDown, Target, ChartLine, Calendar, Users } from "@phosphor-icons/react"
+import { useKV } from "@github/spark/hooks"
+
+interface Campaign {
+  id: string
+  name: string
+  status: "active" | "paused" | "completed" | "draft"
+  budget: number
+  spent: number
+  roi: number
+  impressions: number
+  clicks: number  
+  conversions: number
+  startDate: string
+  endDate: string
+  platform: string
+  type: "awareness" | "conversion" | "engagement" | "retargeting"
+}
+
+const mockCampaigns: Campaign[] = [
+  {
+    id: "1",
+    name: "Summer Sale Campaign",
+    status: "active", 
+    budget: 15000,
+    spent: 8450,
+    roi: 342,
+    impressions: 850000,
+    clicks: 12400,
+    conversions: 156,
+    startDate: "2024-06-01",
+    endDate: "2024-08-31",
+    platform: "Meta",
+    type: "conversion"
+  },
+  {
+    id: "2",
+    name: "Brand Awareness Q3",
+    status: "active",
+    budget: 25000,
+    spent: 15600,
+    roi: 285,
+    impressions: 1200000,
+    clicks: 8900,
+    conversions: 89,
+    startDate: "2024-07-01", 
+    endDate: "2024-09-30",
+    platform: "Google Ads",
+    type: "awareness"
+  },
+  {
+    id: "3",
+    name: "Product Launch Mobile",
+    status: "completed",
+    budget: 8000,
+    spent: 7850,
+    roi: 412,
+    impressions: 420000,
+    clicks: 6200,
+    conversions: 98,
+    startDate: "2024-05-15",
+    endDate: "2024-06-30",
+    platform: "TikTok",
+    type: "awareness"
+  },
+  {
+    id: "4",
+    name: "Retargeting Campaign",
+    status: "active",
+    budget: 5000,
+    spent: 2100,
+    roi: 567,
+    impressions: 180000,
+    clicks: 3400,
+    conversions: 78,
+    startDate: "2024-07-15",
+    endDate: "2024-08-15",
+    platform: "Meta",
+    type: "retargeting"
+  }
+]
+
+export function CampaignPerformance() {
+  const [campaigns] = useKV<Campaign[]>("campaign-performance", mockCampaigns)
+  const [selectedMetric, setSelectedMetric] = useState("roi")
+  const [selectedPlatform, setSelectedPlatform] = useState("all")
+  const [sortBy, setSortBy] = useState("roi")
+  const svgRef = useRef<SVGSVGElement>(null)
+
+  const filteredCampaigns = campaigns?.filter(campaign => 
+    selectedPlatform === "all" || campaign.platform === selectedPlatform
+  ) || []
+
+  const sortedCampaigns = [...filteredCampaigns].sort((a, b) => {
+    switch (sortBy) {
+      case "roi": return b.roi - a.roi
+      case "spent": return b.spent - a.spent
+      case "conversions": return b.conversions - a.conversions
+      case "impressions": return b.impressions - a.impressions
+      default: return 0
+    }
+  })
+
+  const getStatusColor = (status: Campaign["status"]) => {
+    switch (status) {
+      case "active": return "bg-green-100 text-green-800"
+      case "paused": return "bg-yellow-100 text-yellow-800"
+      case "completed": return "bg-blue-100 text-blue-800"
+      case "draft": return "bg-gray-100 text-gray-800"
+      default: return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getTypeColor = (type: Campaign["type"]) => {
+    switch (type) {
+      case "conversion": return "bg-purple-100 text-purple-800"
+      case "awareness": return "bg-blue-100 text-blue-800"
+      case "engagement": return "bg-green-100 text-green-800"
+      case "retargeting": return "bg-orange-100 text-orange-800"
+      default: return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getPlatformIcon = (platform: string) => {
+    // In a real app, you'd use actual platform icons
+    return <Target className="w-4 h-4" />
+  }
+
+  // Calculate CTR and CPC for each campaign
+  const enrichedCampaigns = sortedCampaigns.map(campaign => ({
+    ...campaign,
+    ctr: ((campaign.clicks / campaign.impressions) * 100).toFixed(2),
+    cpc: (campaign.spent / campaign.clicks).toFixed(2),
+    conversionRate: ((campaign.conversions / campaign.clicks) * 100).toFixed(2),
+    budgetUtilization: (campaign.spent / campaign.budget) * 100
+  }))
+
+  useEffect(() => {
+    if (!svgRef.current || !enrichedCampaigns.length) return
+
+    const svg = d3.select(svgRef.current)
+    svg.selectAll("*").remove()
+
+    const margin = { top: 20, right: 30, bottom: 40, left: 60 }
+    const width = 600 - margin.left - margin.right
+    const height = 200 - margin.top - margin.bottom
+
+    const container = svg
+      .attr("width", width + margin.left + margin.right)
+      .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+      .attr("transform", `translate(${margin.left},${margin.top})`)
+
+    // Prepare data for the selected metric
+    const data = enrichedCampaigns.map(campaign => ({
+      name: campaign.name.substring(0, 15) + (campaign.name.length > 15 ? "..." : ""),
+      value: selectedMetric === "roi" ? campaign.roi : 
+             selectedMetric === "spent" ? campaign.spent :
+             selectedMetric === "conversions" ? campaign.conversions : campaign.impressions
+    }))
+
+    const xScale = d3.scaleBand()
+      .domain(data.map(d => d.name))
+      .range([0, width])
+      .padding(0.1)
+
+    const yScale = d3.scaleLinear()
+      .domain([0, d3.max(data, d => d.value) as number])
+      .range([height, 0])
+
+    // Add bars
+    container.selectAll(".bar")
+      .data(data)
+      .enter().append("rect")
+      .attr("class", "bar")
+      .attr("x", d => xScale(d.name)!)
+      .attr("width", xScale.bandwidth())
+      .attr("y", d => yScale(d.value))
+      .attr("height", d => height - yScale(d.value))
+      .attr("fill", "hsl(var(--primary))")
+      .attr("opacity", 0.8)
+
+    // Add axes
+    container.append("g")
+      .attr("transform", `translate(0,${height})`)
+      .call(d3.axisBottom(xScale))
+      .selectAll("text")
+      .style("font-size", "10px")
+      .style("fill", "hsl(var(--muted-foreground))")
+      .attr("transform", "rotate(-45)")
+      .style("text-anchor", "end")
+
+    container.append("g")
+      .call(d3.axisLeft(yScale))
+      .selectAll("text")
+      .style("font-size", "12px")
+      .style("fill", "hsl(var(--muted-foreground))")
+
+  }, [enrichedCampaigns, selectedMetric])
+
+  const totalBudget = enrichedCampaigns.reduce((sum, c) => sum + c.budget, 0)
+  const totalSpent = enrichedCampaigns.reduce((sum, c) => sum + c.spent, 0)
+  const totalConversions = enrichedCampaigns.reduce((sum, c) => sum + c.conversions, 0)
+  const avgROI = enrichedCampaigns.reduce((sum, c) => sum + c.roi, 0) / enrichedCampaigns.length
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h3 className="text-lg font-semibold">Campaign Performance</h3>
+          <p className="text-sm text-muted-foreground">
+            {enrichedCampaigns.length} campaigns • ${totalSpent.toLocaleString()} spent of ${totalBudget.toLocaleString()} budget
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Select value={selectedPlatform} onValueChange={setSelectedPlatform}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Platforms</SelectItem>
+              <SelectItem value="Meta">Meta</SelectItem>
+              <SelectItem value="Google Ads">Google Ads</SelectItem>
+              <SelectItem value="TikTok">TikTok</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="roi">Sort by ROI</SelectItem>
+              <SelectItem value="spent">Sort by Spent</SelectItem>
+              <SelectItem value="conversions">Sort by Conversions</SelectItem>
+              <SelectItem value="impressions">Sort by Impressions</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-green-600">${totalSpent.toLocaleString()}</div>
+            <p className="text-xs text-muted-foreground">Total Spent</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-blue-600">{totalConversions}</div>
+            <p className="text-xs text-muted-foreground">Total Conversions</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-purple-600">{avgROI.toFixed(0)}%</div>
+            <p className="text-xs text-muted-foreground">Average ROI</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-2xl font-bold text-orange-600">{enrichedCampaigns.filter(c => c.status === "active").length}</div>
+            <p className="text-xs text-muted-foreground">Active Campaigns</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Campaign Overview</TabsTrigger>
+          <TabsTrigger value="performance">Performance Chart</TabsTrigger>
+          <TabsTrigger value="budget">Budget Analysis</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4">
+            {enrichedCampaigns.map((campaign) => (
+              <Card key={campaign.id}>
+                <CardHeader className="pb-4">
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-2">
+                      <CardTitle className="text-base">{campaign.name}</CardTitle>
+                      <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className={getStatusColor(campaign.status)}>
+                          {campaign.status}
+                        </Badge>
+                        <Badge variant="outline" className={getTypeColor(campaign.type)}>
+                          {campaign.type}
+                        </Badge>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                          {getPlatformIcon(campaign.platform)}
+                          {campaign.platform}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-primary">{campaign.roi}%</div>
+                      <div className="text-xs text-muted-foreground">ROI</div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                    <div>
+                      <div className="text-muted-foreground">Budget</div>
+                      <div className="font-semibold">${campaign.budget.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Spent</div>
+                      <div className="font-semibold">${campaign.spent.toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">Conversions</div>
+                      <div className="font-semibold">{campaign.conversions}</div>
+                    </div>
+                    <div>
+                      <div className="text-muted-foreground">CTR</div>
+                      <div className="font-semibold">{campaign.ctr}%</div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span>Budget Utilization</span>
+                      <span>{campaign.budgetUtilization.toFixed(1)}%</span>
+                    </div>
+                    <Progress value={campaign.budgetUtilization} />
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4 text-xs text-muted-foreground">
+                    <div>CPC: ${campaign.cpc}</div>
+                    <div>Conv. Rate: {campaign.conversionRate}%</div>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(campaign.startDate).toLocaleDateString()}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="performance">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle>Performance Comparison</CardTitle>
+                <Select value={selectedMetric} onValueChange={setSelectedMetric}>
+                  <SelectTrigger className="w-40">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="roi">ROI %</SelectItem>
+                    <SelectItem value="spent">Amount Spent</SelectItem>
+                    <SelectItem value="conversions">Conversions</SelectItem>
+                    <SelectItem value="impressions">Impressions</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full overflow-x-auto">
+                <svg ref={svgRef} className="w-full" />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="budget">
+          <Card>
+            <CardHeader>
+              <CardTitle>Budget Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center py-12 text-muted-foreground">
+                <ChartLine className="w-8 h-8 mx-auto mb-4 opacity-50" />
+                <div>Budget allocation and spend analysis visualization</div>
+                <div className="text-sm mt-2">Including budget pacing, platform distribution, and optimization recommendations</div>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
