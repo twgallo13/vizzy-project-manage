@@ -6,8 +6,31 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
   const refresh = async () => setItems(await listCampaigns())
   useEffect(() => { void refresh() }, [])
 
+  const handleExport = async () => {
+    const campaigns = await listCampaigns()
+    const blob = new Blob([JSON.stringify(campaigns, null, 2)], { type: "application/json" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "campaigns.json"
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
+  }
+
   return (
     <div className="space-y-2">
+      {items.length > 0 && (
+        <div className="pb-2 border-b">
+          <button 
+            onClick={handleExport}
+            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+          >
+            Export
+          </button>
+        </div>
+      )}
       {items.length === 0 && <div className="text-sm text-muted-foreground">No campaigns yet.</div>}
       {items.map(c => (
         <div key={c.id} className="flex items-center justify-between rounded border p-2">
