@@ -13,6 +13,7 @@ import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
 import { StoreRegistry } from "../stores/StoreRegistry"
 import { IntakeCenter } from "./IntakeCenter"
+import { simulateWeeklyRecompute, useRecomputeStatus } from "../../lib/recompute/status"
 
 interface AIProvider {
   name: string
@@ -32,6 +33,7 @@ export function AdminPanel() {
     openai: { name: "OpenAI", key: "", status: "disconnected", usage: "Reasoning, Text Generation" },
     gemini: { name: "Google Gemini", key: "", status: "disconnected", usage: "Vision, Multimodal Analysis" }
   })
+  const recomputeStatus = useRecomputeStatus()
   
   const [brandSettings, setBrandSettings] = useKV<BrandSettings>("brand-settings", {
     logo: "/assets/logo-placeholder.svg",
@@ -361,19 +363,56 @@ export function AdminPanel() {
         </TabsContent>
 
         <TabsContent value="audit">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ChartBar className="w-5 h-5" />
-                Audit Log
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                Audit log will be implemented here
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ChartBar className="w-5 h-5" />
+                  System Operations
+                </CardTitle>
+                <CardDescription>
+                  Monitor and control system-wide operations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Weekly Recompute</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {recomputeStatus.isRunning 
+                        ? `${recomputeStatus.message} (${recomputeStatus.progress || 0}%)`
+                        : "Recompute analytics and recommendations"
+                      }
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => {
+                      simulateWeeklyRecompute()
+                      toast.info("Weekly recompute started")
+                    }}
+                    disabled={recomputeStatus.isRunning}
+                    variant="outline"
+                  >
+                    {recomputeStatus.isRunning ? "Running..." : "Start Recompute"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ChartBar className="w-5 h-5" />
+                  Audit Log
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-12 text-muted-foreground">
+                  Audit log will be implemented here
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

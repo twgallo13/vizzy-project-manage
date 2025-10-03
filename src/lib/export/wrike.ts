@@ -1,3 +1,14 @@
+import { 
+  generateIdempotencyKey, 
+  generateSnapshotVersion, 
+  getDefaultTenantId, 
+  WrikeExportResult 
+} from './idempotency'
+import { 
+  findExportByKey, 
+  createExportRecord 
+} from './persistence'
+
 export function campaignToWrikeJson(c: any) {
   return {
     campaign: {
@@ -17,6 +28,57 @@ export function campaignToWrikeJson(c: any) {
       { title: "Stores Coordination", owner: c.owners?.stores || "Antonio", due: c.startDate },
       { title: "Approvals", owner: c.owners?.approvals || "Theo", due: c.startDate }
     ]
+  }
+}
+
+/**
+ * Idempotent Wrike project creation
+ * Returns existing project ID if already exported, creates new one otherwise
+ */
+export async function createWrikeProject(campaign: any): Promise<WrikeExportResult> {
+  const tenantId = getDefaultTenantId()
+  const campaignId = campaign.id
+  const snapshotVersion = generateSnapshotVersion(campaign)
+  const idempotencyKey = await generateIdempotencyKey(tenantId, campaignId, snapshotVersion)
+  
+  // Check if export already exists
+  const existingExport = findExportByKey(idempotencyKey)
+  if (existingExport) {
+    return {
+      wrikeProjectId: existingExport.wrikeProjectId,
+      idempotent: true,
+      idempotencyKey,
+      message: `That export already exists (idempotency). Reusing ${existingExport.wrikeProjectId}.`
+    }
+  }
+  
+  // Simulate Wrike API call - in reality this would call Wrike's API
+  const wrikeProjectId = `WRIKE_${Date.now()}_${Math.random().toString(36).slice(2).toUpperCase()}`
+  
+  try {
+    // Persist the export record
+    createExportRecord(tenantId, campaignId, snapshotVersion, idempotencyKey, wrikeProjectId)
+    
+    return {
+      wrikeProjectId,
+      idempotent: false,
+      idempotencyKey,
+      message: `Created new Wrike project: ${wrikeProjectId}`
+    }
+  } catch (error) {
+    // Handle race condition - someone else created the same export
+    if (error instanceof Error && error.message.includes('already exists')) {
+      const raceExport = findExportByKey(idempotencyKey)
+      if (raceExport) {
+        return {
+          wrikeProjectId: raceExport.wrikeProjectId,
+          idempotent: true,
+          idempotencyKey,
+          message: `That export already exists (race condition). Reusing ${raceExport.wrikeProjectId}.`
+        }
+      }
+    }
+    throw error
   }
 }
 
