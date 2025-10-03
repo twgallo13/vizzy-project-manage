@@ -7,6 +7,12 @@ import { Badge } from "@/components/ui/badge"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
 
+// Global spark API is available
+declare const spark: {
+  llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
+  llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
+}
+
 interface ChatMessage {
   id: string
   type: "user" | "assistant"
@@ -49,17 +55,46 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
     setInput("")
     setIsLoading(true)
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      // Use real AI with Spark API
+      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. You help users with marketing data analysis, campaign planning, and performance insights.
+
+Context: You're helping with a marketing planning and analytics platform called Vizzy. Users can ask about campaigns, data analysis, or use specific commands.
+
+Available commands:
+- /explain: Explain marketing data and metrics
+- /simulate: Run scenario simulations  
+- /set: Set up campaigns or configurations
+- /whatif: Explore what-if scenarios
+- /export: Export data in various formats
+- /status: Show current system status
+
+User message: ${input}
+
+Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it and explain what you can help with. Keep responses practical and actionable.`
+
+      const response = await spark.llm(prompt, "gpt-4o-mini")
+      
       const assistantMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: getVizzyResponse(userMessage.content),
+        content: response,
+        timestamp: new Date()
+      }
+      
+      setMessages(prev => [...(prev || []), assistantMessage])
+    } catch (error) {
+      console.error("AI response error:", error)
+      const assistantMessage: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        type: "assistant",
+        content: "I'm sorry, I'm having trouble processing your request right now. Please try again in a moment.",
         timestamp: new Date()
       }
       setMessages(prev => [...(prev || []), assistantMessage])
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   const getVizzyResponse = (input: string): string => {

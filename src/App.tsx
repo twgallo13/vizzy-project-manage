@@ -12,6 +12,9 @@ import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner"
 import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
 import { KpiCard } from "@/components/dashboard/KpiCard"
+import { CampaignChart } from "@/components/dashboard/CampaignChart"
+import { UserManagement } from "@/components/users/UserManagement"
+import { DataExporter } from "@/components/export/DataExporter"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { cn } from "@/lib/utils"
 
@@ -116,7 +119,7 @@ function App() {
               </TabsContent>
               
               <TabsContent value="users">
-                <UsersContent />
+                <UserManagement />
               </TabsContent>
               
               <TabsContent value="admin">
@@ -127,7 +130,7 @@ function App() {
             <div>
               {activeTab === "dashboard" && <DashboardContent kpis={mockKpis} />}
               {activeTab === "planner" && <WeeklyPlanner />}
-              {activeTab === "users" && <UsersContent />}
+              {activeTab === "users" && <UserManagement />}
               {activeTab === "admin" && <AdminPanel />}
             </div>
           )}
@@ -164,10 +167,14 @@ function DashboardContent({ kpis }: { kpis: any[] }) {
             <Upload className="w-4 h-4" />
             Import Data
           </Button>
-          <Button size="sm" className="gap-2">
-            <Download className="w-4 h-4" />
-            Export Report
-          </Button>
+          <DataExporter
+            trigger={
+              <Button size="sm" className="gap-2">
+                <Download className="w-4 h-4" />
+                Export Report
+              </Button>
+            }
+          />
         </div>
       </div>
 
@@ -178,17 +185,7 @@ function DashboardContent({ kpis }: { kpis: any[] }) {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Campaign Performance</CardTitle>
-            <CardDescription>Track your marketing campaigns over time</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="h-64 flex items-center justify-center text-muted-foreground">
-              Chart visualization would go here
-            </div>
-          </CardContent>
-        </Card>
+        <CampaignChart />
 
         <Card>
           <CardHeader>
@@ -210,31 +207,6 @@ function DashboardContent({ kpis }: { kpis: any[] }) {
           </CardContent>
         </Card>
       </div>
-    </div>
-  )
-}
-
-function UsersContent() {
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-semibold">User Management</h2>
-          <p className="text-muted-foreground">Manage team members and permissions</p>
-        </div>
-        <Button className="gap-2">
-          <Users className="w-4 h-4" />
-          Add User
-        </Button>
-      </div>
-
-      <Card>
-        <CardContent className="p-6">
-          <div className="text-center py-12 text-muted-foreground">
-            User management interface will be implemented here
-          </div>
-        </CardContent>
-      </Card>
     </div>
   )
 }
