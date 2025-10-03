@@ -32,6 +32,8 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
       const importedCampaigns = JSON.parse(text)
       
       if (Array.isArray(importedCampaigns)) {
+        import { useEffect, useState, useRef } from "react"
+        import { listCampaigns, persistCampaign, removeCampaign } from "@/lib/store/campaigns"
         // Merge campaigns by persisting each one
         for (const campaign of importedCampaigns) {
           if (campaign.id && campaign.name) {
