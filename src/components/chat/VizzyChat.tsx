@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
+import { nowISO } from "@/lib/util/dates"
 
 declare global {
   interface Window {
@@ -21,7 +22,7 @@ interface ChatMessage {
   id: string
   type: "user" | "assistant"
   content: string
-  timestamp: Date
+  timestamp: string
   command?: string
 }
 
@@ -42,7 +43,7 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
       id: Date.now().toString(),
       type: "user",
       content: input.trim(),
-      timestamp: new Date()
+      timestamp: nowISO()
     }
 
     setMessages(prev => [...(prev || []), userMessage])
@@ -69,7 +70,7 @@ Provide a helpful, conversational response focused on marketing insights and act
         id: (Date.now() + 1).toString(),
         type: "assistant",
         content: response,
-        timestamp: new Date()
+        timestamp: nowISO()
       }
 
       setMessages(prev => [...(prev || []), assistantMessage])
@@ -78,7 +79,7 @@ Provide a helpful, conversational response focused on marketing insights and act
         id: (Date.now() + 1).toString(),
         type: "assistant",
         content: "Sorry, I'm having trouble responding right now. Please try again.",
-        timestamp: new Date()
+        timestamp: nowISO()
       }
       setMessages(prev => [...(prev || []), errorMessage])
     } finally {
