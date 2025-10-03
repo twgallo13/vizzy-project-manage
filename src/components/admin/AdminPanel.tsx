@@ -13,6 +13,7 @@ import { Activity } from "lucide-react"
 import { useKV } from "@github/spark/hooks"
 import { toast } from "sonner"
 import { StoreRegistry } from "../stores/StoreRegistry"
+import { IntakeCenter } from "./IntakeCenter"
 
 interface AIProvider {
   name: string
@@ -348,6 +349,8 @@ export function AdminPanel() {
               </Alert>
             </CardContent>
           </Card>
+
+          <IntakeCenter />
         </TabsContent>
 
         <TabsContent value="stores">
