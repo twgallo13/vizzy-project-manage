@@ -279,7 +279,7 @@ Provide a helpful, conversational response focused on marketing insights and act
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[600px] flex flex-col">
+      <DialogContent forceMount className="max-w-2xl h-[600px] flex flex-col">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
