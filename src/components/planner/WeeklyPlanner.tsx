@@ -244,7 +244,7 @@ export function WeeklyPlanner() {
                             {activity.priority}
                           </Badge>
                         </div>
-                        {activity.tags.length > 0 && (
+                        {activity.tags && activity.tags.length > 0 && (
                           <div className="flex flex-wrap gap-1">
                             {activity.tags.slice(0, 2).map(tag => (
                               <Badge key={tag} variant="outline" className="text-xs">
@@ -330,7 +330,7 @@ export function WeeklyPlanner() {
                             <Badge variant="secondary" className={getPriorityColor(activity.priority)}>
                               {activity.priority}
                             </Badge>
-                            {activity.tags.map(tag => (
+                            {activity.tags && activity.tags.map(tag => (
                               <Badge key={tag} variant="outline">
                                 {tag}
                               </Badge>
