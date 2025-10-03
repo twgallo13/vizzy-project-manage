@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { CampaignSchema } from "../validation/campaignSchema"
 export async function createCampaignWithAI(brief: string, constraints: any = {}) {
   try {

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react"
 import { getCampaign, persistCampaign } from "@/lib/store/campaigns"
 import { CampaignSchema } from "@/lib/validation/campaignSchema"

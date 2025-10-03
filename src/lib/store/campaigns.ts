@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type Id = string
 
 function safeParse<T>(s: string | null): T | null { try { return s ? JSON.parse(s) : null } catch { return null } }

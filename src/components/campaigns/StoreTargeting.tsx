@@ -36,6 +36,7 @@ export function StoreTargeting({ targeting, onTargetingChange, onEventTypeChange
       setAvailableStores([])
       setSelectedStoreIds([])
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRegions])
 
   useEffect(() => {

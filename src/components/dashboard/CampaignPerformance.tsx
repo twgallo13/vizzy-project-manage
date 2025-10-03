@@ -1,12 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import * as d3 from "d3"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { TrendUp, TrendDown, Target, ChartLine, Calendar, Users } from "@phosphor-icons/react"
+import { TrendUp, TrendDown, Target, Calendar } from "@phosphor-icons/react"
 import { useKV } from "../../hooks/useKV"
 import { seriesForReachByWeek } from "@/lib/store/metrics"
 
