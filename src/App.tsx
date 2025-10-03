@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useKV } from "@github/spark/hooks"
 import { Button } from "@/components/ui/button"
+import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -11,6 +12,8 @@ import { Calendar, ChatCircle, ChartBar, Users, Gear, Upload, Download, TrendUp,
 import { WeeklyPlanner } from "@/components/planner/WeeklyPlanner"
 import { VizzyChat } from "@/components/chat/VizzyChat"
 import { AdminPanel } from "@/components/admin/AdminPanel"
+import CampaignList from "@/components/campaigns/CampaignList"
+import CampaignEditor from "@/components/campaigns/CampaignEditor"
 import { KpiCard } from "@/components/dashboard/KpiCard"
 import { CampaignChart } from "@/components/dashboard/CampaignChart"
 import { AdvancedAnalytics } from "@/components/dashboard/AdvancedAnalytics"
@@ -32,6 +35,7 @@ interface User {
 function App() {
   const [activeTab, setActiveTab] = useState("dashboard")
   const [showVizzyChat, setShowVizzyChat] = useState(false)
+  const [editingCampaignId, setEditingCampaignId] = useState<string | null>(null)
   const [user] = useKV<User>("current-user", { name: "Marketing Manager", role: "admin", isOwner: true })
   const isMobile = useIsMobile()
 
@@ -51,9 +55,10 @@ function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm">
@@ -80,7 +85,7 @@ function App() {
       <div className="flex">
         {/* Desktop Sidebar */}
         {!isMobile && (
-          <aside className="w-64 border-r bg-card/30 min-h-[calc(100vh-64px)] p-4">
+          <aside className="w-64 border-r bg-card/30 min-h-[calc(100vh-64px)] p-4 space-y-6">
             <nav className="space-y-2">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -97,6 +102,13 @@ function App() {
                 )
               })}
             </nav>
+            
+            <div className="border-t pt-4">
+              <h3 className="text-sm font-medium text-muted-foreground mb-3">Saved Campaigns</h3>
+              <CampaignList onOpen={(id) => {
+                setEditingCampaignId(id)
+              }} />
+            </div>
           </aside>
         )}
 
@@ -160,8 +172,28 @@ function App() {
       )}
 
       {/* Vizzy Chat Dialog */}
-      <VizzyChat open={showVizzyChat} onOpenChange={setShowVizzyChat} />
-    </div>
+      <VizzyChat 
+        open={showVizzyChat} 
+        onOpenChange={setShowVizzyChat}
+        onCampaignCreated={(campaignId) => setEditingCampaignId(campaignId)}
+      />
+      
+      {/* Campaign Editor Dialog */}
+      {editingCampaignId && (
+        <Dialog open={!!editingCampaignId} onOpenChange={() => setEditingCampaignId(null)}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Edit Campaign</DialogTitle>
+            </DialogHeader>
+            <CampaignEditor 
+              id={editingCampaignId} 
+              onClose={() => setEditingCampaignId(null)} 
+            />
+          </DialogContent>
+        </Dialog>
+      )}
+      </div>
+    </ErrorBoundary>
   )
 }
 

@@ -357,6 +357,10 @@ export function AdminPanel() {
           <StoreRegistry />
         </TabsContent>
 
+        <TabsContent value="stores">
+          <StoreRegistry />
+        </TabsContent>
+
         <TabsContent value="audit">
           <Card>
             <CardHeader>
