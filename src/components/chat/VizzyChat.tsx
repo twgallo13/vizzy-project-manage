@@ -55,6 +55,8 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successCampaign, setSuccessCampaign] = useState<{ name: string } | null>(null)
+  const [lastCreatedCampaign, setLastCreatedCampaign] = useState<any>(null)
+  const [lastBrief, setLastBrief] = useState<string>("")
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -141,14 +143,17 @@ Provide a helpful, conversational response focused on marketing insights and act
     e.preventDefault()
     if (!input.trim() || loading) return
 
+    const brief = input.trim()
     setLoading(true)
     setError(null)
     setSuccessCampaign(null)
+    setLastBrief(brief)
 
     try {
-      const campaign = await createCampaignWithAI(input.trim())
+      const campaign = await createCampaignWithAI(brief)
       console.log("AI Campaign created:", campaign)
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
+      setLastCreatedCampaign(campaign)
       
       // Add success message to chat
       const nowISO = new Date().toISOString()
@@ -175,6 +180,48 @@ Provide a helpful, conversational response focused on marketing insights and act
     setError(null)
     setSuccessCampaign(null)
     setInput("")
+  }
+
+  const handleRetry = async () => {
+    if (!lastBrief || loading) return
+    
+    setLoading(true)
+    setError(null)
+    setSuccessCampaign(null)
+
+    try {
+      const campaign = await createCampaignWithAI(lastBrief)
+      console.log("AI Campaign created (retry):", campaign)
+      setSuccessCampaign({ name: campaign?.name || "New Campaign" })
+      setLastCreatedCampaign(campaign)
+      
+      // Add success message to chat
+      const nowISO = new Date().toISOString()
+      const successMessage: ChatMessage = {
+        id: String(Date.now() + 2),
+        type: "assistant",
+        content: `✅ Retried: ${campaign?.name || "New Campaign"}`,
+        timestamp: nowISO
+      }
+      setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
+      
+      setTimeout(() => scrollToBottom(), 100)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create campaign")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCopyJSON = async () => {
+    if (!lastCreatedCampaign) return
+    
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(lastCreatedCampaign, null, 2))
+      // Could add a toast notification here if desired
+    } catch (err) {
+      console.error("Failed to copy JSON:", err)
+    }
   }
 
   return (
@@ -256,20 +303,39 @@ Provide a helpful, conversational response focused on marketing insights and act
 
         <div className="pt-4 border-t space-y-3 flex-shrink-0">
           {error && (
-            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
-              {error}
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded flex items-center justify-between">
+              <span>{error}</span>
+              {lastBrief && (
+                <button
+                  onClick={handleRetry}
+                  disabled={loading}
+                  className="text-destructive hover:text-destructive/80 text-xs underline ml-2"
+                >
+                  Retry
+                </button>
+              )}
             </div>
           )}
           
           {successCampaign && (
             <div className="text-sm text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center justify-between">
               <span>✓ Campaign "{successCampaign.name}" created successfully!</span>
-              <button
-                onClick={resetForm}
-                className="text-green-600 hover:text-green-800 text-xs underline ml-2"
-              >
-                Create another
-              </button>
+              <div className="flex gap-2">
+                {lastCreatedCampaign && (
+                  <button
+                    onClick={handleCopyJSON}
+                    className="text-green-600 hover:text-green-800 text-xs underline"
+                  >
+                    Copy JSON
+                  </button>
+                )}
+                <button
+                  onClick={resetForm}
+                  className="text-green-600 hover:text-green-800 text-xs underline"
+                >
+                  Create another
+                </button>
+              </div>
             </div>
           )}
           
