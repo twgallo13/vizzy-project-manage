@@ -2,13 +2,40 @@ import { useEffect, useState } from "react"
 import { getCampaign, persistCampaign } from "@/lib/store/campaigns"
 import { CampaignSchema } from "@/lib/validation/campaignSchema"
 import { COMMON_ASSETS, ensureAssetUniq } from "@/lib/assets/specs"
+import { validateAgainstGovernance } from "@/lib/rules/governance"
+import { GovernancePanel } from "./GovernancePanel"
 
 export default function CampaignEditor({ id, onClose }: { id: string; onClose?: ()=>void }) {
   const [c, setC] = useState<any | null>(null)
   const [error, setError] = useState<string>("")
   const [showAssets, setShowAssets] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [governanceResult, setGovernanceResult] = useState<any>(null)
   useEffect(() => { (async ()=>setC(await getCampaign(id)))() }, [id])
+  
+  // Validate governance on campaign changes
+  useEffect(() => {
+    if (c) {
+      const result = validateAgainstGovernance(c)
+      setGovernanceResult(result)
+    }
+  }, [c])
+
+  const handleOverride = (note: string) => {
+    const escalation = {
+      at: new Date().toISOString(),
+      by: "current-user", // TODO: get actual user
+      note,
+      severitySnapshot: governanceResult?.severity || "unknown",
+      issuesSnapshot: governanceResult?.issues || []
+    }
+    setC(prev => ({
+      ...prev,
+      escalations: [...(prev.escalations || []), escalation],
+      overrideApproved: true
+    }))
+  }
+
   if (!c) return <div className="text-sm text-muted-foreground">Loading…</div>
   const defaultOwners = {
     creative: "Abby",
@@ -16,8 +43,11 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
     stores: "Antonio",
     approvals: "Theo"
   }
+  const canSave = !governanceResult || governanceResult.severity !== "critical"
+
   return (
-    <div className="space-y-2">
+    <div className="grid grid-cols-3 gap-4">
+      <div className="col-span-2 space-y-2">
       <div className="border rounded p-2 bg-muted/30">
         <div className="text-xs font-semibold mb-1">Owners</div>
         <div className="grid grid-cols-2 gap-2">
@@ -95,16 +125,23 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
       }).filter(Boolean) })} placeholder="assets (one per line, format: type: spec)" />
       {error && <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">{error}</div>}
       <div className="flex gap-2 items-center">
-        <button className="rounded bg-primary px-3 py-1 text-primary-foreground" onClick={async()=>{
-          try {
-            CampaignSchema.parse(c)
-            await persistCampaign(c)
-            setError("")
-            alert("Saved")
-          } catch (e: any) {
-            setError(e.message || "Validation failed")
-          }
-        }}>Save</button>
+        <button 
+          className={`rounded px-3 py-1 ${canSave ? 'bg-primary text-primary-foreground' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+          disabled={!canSave}
+          onClick={async()=>{
+            if (!canSave) return
+            try {
+              CampaignSchema.parse(c)
+              await persistCampaign(c)
+              setError("")
+              alert("Saved")
+            } catch (e: any) {
+              setError(e.message || "Validation failed")
+            }
+          }}
+        >
+          Save {!canSave ? "(Blocked by Critical Issues)" : ""}
+        </button>
         <button 
           className="rounded border px-3 py-1 text-blue-600" 
           onClick={async () => {
@@ -120,6 +157,10 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
           {copied ? "Copied!" : "Copy JSON"}
         </button>
         {onClose && <button className="rounded border px-3 py-1" onClick={onClose}>Close</button>}
+      </div>
+      </div>
+      <div className="col-span-1">
+        <GovernancePanel campaign={c} onOverride={handleOverride} />
       </div>
     </div>
   )
