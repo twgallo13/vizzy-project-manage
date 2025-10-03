@@ -79,14 +79,15 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
+    const nowISO = new Date().toISOString()
     const userMessage: ChatMessage = {
-      id: Date.now().toString(),
+      id: String(Date.now()),
       type: "user",
       content: input.trim(),
-      timestamp: new Date()
+      timestamp: nowISO
     }
 
-    setMessages(prev => [...(prev || []), userMessage])
+    setMessages(prev => [...(prev || []), normalizeMessage(userMessage)])
     setInput("")
     setIsLoading(true)
 
@@ -106,22 +107,24 @@ Provide a helpful, conversational response focused on marketing insights and act
 
       const response = await spark.llm(prompt)
       
+      const nowISO = new Date().toISOString()
       const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: String(Date.now() + 1),
         type: "assistant",
         content: response,
-        timestamp: new Date()
+        timestamp: nowISO
       }
 
-      setMessages(prev => [...(prev || []), assistantMessage])
+      setMessages(prev => [...(prev || []), normalizeMessage(assistantMessage)])
     } catch (error) {
+      const nowISO = new Date().toISOString()
       const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
+        id: String(Date.now() + 1),
         type: "assistant",
         content: "Sorry, I'm having trouble responding right now. Please try again.",
-        timestamp: new Date()
+        timestamp: nowISO
       }
-      setMessages(prev => [...(prev || []), errorMessage])
+      setMessages(prev => [...(prev || []), normalizeMessage(errorMessage)])
     } finally {
       setIsLoading(false)
     }
@@ -148,13 +151,14 @@ Provide a helpful, conversational response focused on marketing insights and act
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
       
       // Add success message to chat
+      const nowISO = new Date().toISOString()
       const successMessage: ChatMessage = {
-        id: (Date.now() + 2).toString(),
+        id: String(Date.now() + 2),
         type: "assistant",
         content: `✅ Created: ${campaign?.name || "New Campaign"}`,
-        timestamp: new Date()
+        timestamp: nowISO
       }
-      setMessages(prev => [...(prev || []), successMessage])
+      setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
       
       setInput("")
       
@@ -186,14 +190,16 @@ Provide a helpful, conversational response focused on marketing insights and act
         <div className="flex-1 min-h-0">
           <ScrollArea ref={scrollContainerRef} className="h-full pr-4">
             <div className="space-y-4 pb-4">
-            {messages?.length === 0 ? (
+            {(() => {
+              const normalizedMessages = (messages || []).map(normalizeMessage)
+              return normalizedMessages.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
                 <p className="text-lg font-medium">Hi! I'm Vizzy, your AI marketing assistant.</p>
                 <p className="text-sm mt-2">Ask me about your campaigns, data, or try commands like /explain or /status</p>
               </div>
             ) : (
-              messages?.map((message) => (
+              normalizedMessages.map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-3 ${
@@ -228,7 +234,7 @@ Provide a helpful, conversational response focused on marketing insights and act
                   )}
                 </div>
               ))
-            )}
+            )})()}
 
             {isLoading && (
               <div className="flex gap-3 justify-start">
