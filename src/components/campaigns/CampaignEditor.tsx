@@ -9,8 +9,33 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
   const [showAssets, setShowAssets] = useState(false)
   useEffect(() => { (async ()=>setC(await getCampaign(id)))() }, [id])
   if (!c) return <div className="text-sm text-muted-foreground">Loading…</div>
+  const defaultOwners = {
+    creative: "Abby",
+    social: "Vanezza",
+    stores: "Antonio",
+    approvals: "Theo"
+  }
   return (
     <div className="space-y-2">
+      <div className="border rounded p-2 bg-muted/30">
+        <div className="text-xs font-semibold mb-1">Owners</div>
+        <div className="grid grid-cols-2 gap-2">
+          {Object.entries(defaultOwners).map(([role, def]) => (
+            <div key={role} className="flex flex-col gap-1">
+              <label className="text-xs capitalize">{role}</label>
+              <input
+                className="rounded border p-1 text-xs"
+                value={c.owners?.[role] ?? def}
+                onChange={e => setC({
+                  ...c,
+                  owners: { ...c.owners, [role]: e.target.value }
+                })}
+                placeholder={def}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="flex gap-2 items-center">
         <button className="text-xs underline text-primary" type="button" onClick={()=>setShowAssets(v=>!v)}>
           Add common assets
