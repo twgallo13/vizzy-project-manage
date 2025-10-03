@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User, Sparkle } from "@phosphor-icons/react"
 import { createCampaignWithAI } from "@/lib/client/createCampaignWithAI"
+import { persistCampaign } from "@/lib/store/campaigns"
 
 declare global {
   interface Window {
@@ -165,15 +166,27 @@ Provide a helpful, conversational response focused on marketing insights and act
     try {
       const campaign = await createCampaignWithAI(brief)
       console.log("AI Campaign created:", campaign)
+      
+      // Ensure campaign has required fields
+      const campaignToSave = {
+        ...campaign,
+        id: campaign?.id || String(Date.now()),
+        createdBy: "ai" as const,
+        createdAt: campaign?.createdAt || new Date().toISOString()
+      }
+      
+      // Save to store
+      await persistCampaign(campaignToSave)
+      
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
-      setLastCreatedCampaign(campaign)
+      setLastCreatedCampaign(campaignToSave)
       
       // Add success message to chat
       const nowISO = new Date().toISOString()
       const successMessage: ChatMessage = {
         id: String(Date.now() + 2),
         type: "assistant",
-        content: `✅ Created: ${campaign?.name || "New Campaign"}`,
+        content: `✅ Created: ${campaign?.name || "New Campaign"} • Saved`,
         timestamp: nowISO
       }
       setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
@@ -211,15 +224,27 @@ Provide a helpful, conversational response focused on marketing insights and act
     try {
       const campaign = await createCampaignWithAI(lastBrief)
       console.log("AI Campaign created (retry):", campaign)
+      
+      // Ensure campaign has required fields
+      const campaignToSave = {
+        ...campaign,
+        id: campaign?.id || String(Date.now()),
+        createdBy: "ai" as const,
+        createdAt: campaign?.createdAt || new Date().toISOString()
+      }
+      
+      // Save to store
+      await persistCampaign(campaignToSave)
+      
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
-      setLastCreatedCampaign(campaign)
+      setLastCreatedCampaign(campaignToSave)
       
       // Add success message to chat
       const nowISO = new Date().toISOString()
       const successMessage: ChatMessage = {
         id: String(Date.now() + 2),
         type: "assistant",
-        content: `✅ Retried: ${campaign?.name || "New Campaign"}`,
+        content: `✅ Retried: ${campaign?.name || "New Campaign"} • Saved`,
         timestamp: nowISO
       }
       setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
