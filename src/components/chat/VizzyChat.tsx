@@ -38,12 +38,13 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
 
   // Normalize loaded messages to ensure consistent timestamp format
   useEffect(() => {
-    if (messages && messages.length > 0) {
-      const needsNormalization = messages.some(m => !m.timestamp || typeof m.timestamp !== 'string')
+    const messageArray = messages ?? []
+    if (messageArray.length > 0) {
+      const needsNormalization = messageArray.some(m => !m.timestamp || typeof m.timestamp !== 'string')
       if (needsNormalization) {
-        const normalizedMessages = messages.map(m => ({
+        const normalizedMessages = messageArray.map(m => ({
           ...m,
-          id: String(m.id),
+          id: String(m.id ?? Date.now()),
           timestamp: m.timestamp ? String(m.timestamp) : nowISO()
         }))
         setMessages(normalizedMessages)
@@ -121,14 +122,14 @@ Provide a helpful, conversational response focused on marketing insights and act
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-4 pb-4">
-            {messages?.length === 0 ? (
+            {(messages ?? []).length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
                 <p className="text-lg font-medium">Hi! I'm Vizzy, your AI marketing assistant.</p>
                 <p className="text-sm mt-2">Ask me about your campaigns, data, or try commands like /explain or /status</p>
               </div>
             ) : (
-              messages?.map((message) => (
+              (messages ?? []).map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-3 ${
