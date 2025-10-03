@@ -24,6 +24,12 @@ export const GovernanceTrackingSchema = z.object({
   complianceScore: z.number().min(0).max(100).optional(),
   escalationFlags: z.array(z.string()).default([])
 })
+
+export const CampaignTargetingSchema = z.object({
+  storeIds: z.array(z.string()).optional(),
+  regions: z.array(z.string()).optional(),
+  eventType: z.enum(["community", "customer", "partner"]).optional()
+})
 export const CampaignSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1),
@@ -39,8 +45,10 @@ export const CampaignSchema = z.object({
   createdBy: z.enum(["ai","manual"]).optional(),
   createdAt: z.string().optional(),
   owners: CampaignOwnersSchema.optional(),
-  governance: GovernanceTrackingSchema.optional()
+  governance: GovernanceTrackingSchema.optional(),
+  targeting: CampaignTargetingSchema.optional()
 })
 export type TCampaign = z.infer<typeof CampaignSchema>
 export type TGovernanceOverride = z.infer<typeof GovernanceOverrideSchema>
 export type TGovernanceTracking = z.infer<typeof GovernanceTrackingSchema>
+export type TCampaignTargeting = z.infer<typeof CampaignTargetingSchema>

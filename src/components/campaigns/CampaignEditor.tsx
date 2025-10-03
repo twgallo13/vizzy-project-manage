@@ -4,6 +4,7 @@ import { CampaignSchema } from "@/lib/validation/campaignSchema"
 import { COMMON_ASSETS, ensureAssetUniq } from "@/lib/assets/specs"
 import { validateAgainstGovernance } from "@/lib/rules/governance"
 import { GovernancePanel } from "./GovernancePanel"
+import { StoreTargeting } from "./StoreTargeting"
 
 export default function CampaignEditor({ id, onClose }: { id: string; onClose?: ()=>void }) {
   const [c, setC] = useState<any | null>(null)
@@ -33,6 +34,28 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
       ...prev,
       escalations: [...(prev.escalations || []), escalation],
       overrideApproved: true
+    }))
+  }
+
+  const handleTargetingChange = (targeting: any) => {
+    setC(prev => ({ ...prev, targeting }))
+  }
+
+  const handleEventTypeChange = (eventType: string, notes: string) => {
+    const owners = { ...c.owners }
+    
+    if (eventType === "community") {
+      owners.stores = "Antonio"
+    } else if (eventType === "partner") {
+      owners.stores = "David"
+    } else {
+      owners.stores = "Antonio"
+    }
+    
+    setC(prev => ({
+      ...prev,
+      owners,
+      notes: notes ? (prev.notes ? `${prev.notes}\n${notes}` : notes) : prev.notes
     }))
   }
 
@@ -123,6 +146,13 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
         const [type, ...specArr] = line.split(":")
         return type && specArr.length ? { type: type.trim(), spec: specArr.join(":").trim() } : null
       }).filter(Boolean) })} placeholder="assets (one per line, format: type: spec)" />
+      
+      <StoreTargeting 
+        targeting={c.targeting}
+        onTargetingChange={handleTargetingChange}
+        onEventTypeChange={handleEventTypeChange}
+      />
+      
       {error && <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">{error}</div>}
       <div className="flex gap-2 items-center">
         <button 
@@ -131,8 +161,19 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
           onClick={async()=>{
             if (!canSave) return
             try {
-              CampaignSchema.parse(c)
-              await persistCampaign(c)
+              // Prepare campaign for save
+              let campaignToSave = { ...c }
+              
+              // Auto-prepend [Partner] for partner events if not already there
+              if (campaignToSave.targeting?.eventType === "partner" && 
+                  campaignToSave.name && 
+                  !campaignToSave.name.toLowerCase().includes("partner")) {
+                campaignToSave.name = `[Partner] ${campaignToSave.name}`
+              }
+              
+              CampaignSchema.parse(campaignToSave)
+              await persistCampaign(campaignToSave)
+              setC(campaignToSave) // Update local state
               setError("")
               alert("Saved")
             } catch (e: any) {
