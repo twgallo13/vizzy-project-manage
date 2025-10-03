@@ -1,11 +1,11 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
-import { nowISO } from "@/lib/util/dates"
+import { nowISO, toLocalHM } from "@/lib/util/dates"
 
 declare global {
   interface Window {
@@ -35,6 +35,21 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+
+  // Normalize loaded messages to ensure consistent timestamp format
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      const needsNormalization = messages.some(m => !m.timestamp || typeof m.timestamp !== 'string')
+      if (needsNormalization) {
+        const normalizedMessages = messages.map(m => ({
+          ...m,
+          id: String(m.id),
+          timestamp: m.timestamp ? String(m.timestamp) : nowISO()
+        }))
+        setMessages(normalizedMessages)
+      }
+    }
+  }, [messages, setMessages])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -137,10 +152,7 @@ Provide a helpful, conversational response focused on marketing insights and act
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {message.timestamp.toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      {toLocalHM(message.timestamp)}
                     </p>
                   </div>
 
