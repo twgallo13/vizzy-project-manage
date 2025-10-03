@@ -20,10 +20,21 @@ const spark = window.spark
 
 interface ChatMessage {
   id: string
-  type: "user" | "assistant"
+  type: "user" | "assistant" | "system"
   content: string
-  timestamp: Date
+  timestamp: Date | string | number
   command?: string
+}
+
+function toDate(ts: Date | string | number | undefined): Date {
+  if (!ts) return new Date()
+  if (ts instanceof Date) return ts
+  const d = new Date(ts)
+  return isNaN(d.getTime()) ? new Date() : d
+}
+
+function normalizeMessage(m: ChatMessage): ChatMessage & { timestamp: Date } {
+  return { ...m, timestamp: toDate(m.timestamp) }
 }
 
 interface VizzyChatProps {
@@ -200,7 +211,7 @@ Provide a helpful, conversational response focused on marketing insights and act
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {message.timestamp.toLocaleTimeString([], { 
+                      {normalizeMessage(message).timestamp.toLocaleTimeString([], { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}
