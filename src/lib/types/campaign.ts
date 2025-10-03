@@ -10,4 +10,6 @@ export type Campaign = {
   notes?: string
   createdBy: "ai" | "manual"
   createdAt: string
+  status?: "Draft" | "Planned" | "Live" | "Archived"
+  tags?: string[]
 }

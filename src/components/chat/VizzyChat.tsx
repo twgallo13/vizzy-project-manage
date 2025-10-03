@@ -172,7 +172,9 @@ Provide a helpful, conversational response focused on marketing insights and act
         ...campaign,
         id: campaign?.id || String(Date.now()),
         createdBy: "ai" as const,
-        createdAt: campaign?.createdAt || new Date().toISOString()
+        createdAt: campaign?.createdAt || new Date().toISOString(),
+        status: campaign?.status || "Draft" as const,
+        tags: campaign?.tags || []
       }
       
       // Save to store
@@ -227,7 +229,9 @@ Provide a helpful, conversational response focused on marketing insights and act
         ...campaign,
         id: campaign?.id || String(Date.now()),
         createdBy: "ai" as const,
-        createdAt: campaign?.createdAt || new Date().toISOString()
+        createdAt: campaign?.createdAt || new Date().toISOString(),
+        status: campaign?.status || "Draft" as const,
+        tags: campaign?.tags || []
       }
       
       // Save to store
