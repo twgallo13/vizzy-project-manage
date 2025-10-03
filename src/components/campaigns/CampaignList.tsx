@@ -8,6 +8,7 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
       return JSON.parse(localStorage.getItem("vizzy:listFilters") || "{}")
     } catch { return {} }
   })
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const refresh = async () => setItems(await listCampaigns())
   useEffect(() => { void refresh() }, [])
@@ -52,6 +53,16 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
     
     // Reset file input
     if (event.target) event.target.value = ""
+  }
+
+  const handleCopyJSON = async (campaign: any) => {
+    try {
+      await navigator.clipboard.writeText(JSON.stringify(campaign, null, 2))
+      setCopiedId(campaign.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error("Failed to copy JSON:", err)
+    }
   }
 
   // Filtering logic
@@ -136,8 +147,14 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
             <div className="text-xs text-muted-foreground">{new Date(c.createdAt || Date.now()).toLocaleString()}</div>
             {c.tags && c.tags.length > 0 && <div className="text-xs text-muted-foreground mt-1">{c.tags.join(", ")}</div>}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <button className="text-xs underline" onClick={() => onOpen(c.id)}>Open</button>
+            <button 
+              className="text-xs underline text-blue-600" 
+              onClick={() => handleCopyJSON(c)}
+            >
+              {copiedId === c.id ? "Copied!" : "Copy JSON"}
+            </button>
             <button className="text-xs text-red-600 underline" onClick={async () => { await removeCampaign(c.id); void refresh() }}>Delete</button>
           </div>
         </div>

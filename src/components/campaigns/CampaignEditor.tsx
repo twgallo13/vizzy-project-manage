@@ -7,6 +7,7 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
   const [c, setC] = useState<any | null>(null)
   const [error, setError] = useState<string>("")
   const [showAssets, setShowAssets] = useState(false)
+  const [copied, setCopied] = useState(false)
   useEffect(() => { (async ()=>setC(await getCampaign(id)))() }, [id])
   if (!c) return <div className="text-sm text-muted-foreground">Loading…</div>
   const defaultOwners = {
@@ -93,7 +94,7 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
         return type && specArr.length ? { type: type.trim(), spec: specArr.join(":").trim() } : null
       }).filter(Boolean) })} placeholder="assets (one per line, format: type: spec)" />
       {error && <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">{error}</div>}
-      <div className="flex gap-2">
+      <div className="flex gap-2 items-center">
         <button className="rounded bg-primary px-3 py-1 text-primary-foreground" onClick={async()=>{
           try {
             CampaignSchema.parse(c)
@@ -104,6 +105,20 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
             setError(e.message || "Validation failed")
           }
         }}>Save</button>
+        <button 
+          className="rounded border px-3 py-1 text-blue-600" 
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(JSON.stringify(c, null, 2))
+              setCopied(true)
+              setTimeout(() => setCopied(false), 2000)
+            } catch (err) {
+              console.error("Failed to copy JSON:", err)
+            }
+          }}
+        >
+          {copied ? "Copied!" : "Copy JSON"}
+        </button>
         {onClose && <button className="rounded border px-3 py-1" onClick={onClose}>Close</button>}
       </div>
     </div>
