@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { CalendarPlus, Clock, Tag, User } from "@phosphor-icons/react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 import { toast } from "sonner"
 
 export interface Activity {

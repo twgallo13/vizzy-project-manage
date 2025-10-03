@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Brain, TrendUp, Target, Calendar, Warning, Lightbulb } from "@phosphor-icons/react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 
 // Global spark API is available
 declare const spark: {

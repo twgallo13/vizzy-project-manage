@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "./hooks/useKV"
 import { Button } from "@/components/ui/button"
 import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"

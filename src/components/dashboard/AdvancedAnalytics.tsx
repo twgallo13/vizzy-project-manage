@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { TrendUp, TrendDown, Brain, Target, Users, Clock, Lightbulb } from "@phosphor-icons/react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 
 // Global spark API is available
 declare const spark: {

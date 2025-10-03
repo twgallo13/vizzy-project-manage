@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Users, Plus, Gear, EnvelopeSimple, CalendarBlank, DotsThreeVertical, UserPlus, Shield, User } from "@phosphor-icons/react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 import { toast } from "sonner"
 
 interface User {

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Download, FileText, Table, Database, Calendar } from "@phosphor-icons/react"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 import { toast } from "sonner"
 
 interface ExportConfig {

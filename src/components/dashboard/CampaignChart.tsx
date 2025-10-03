@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react"
 import * as d3 from "d3"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useKV } from "@github/spark/hooks"
+import { useKV } from "../../hooks/useKV"
 
 interface ChartData {
   date: string

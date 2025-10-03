@@ -6,8 +6,7 @@ import tsconfigPaths from "vite-tsconfig-paths";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
-import sparkPlugin from "@github/spark/spark-vite-plugin";
-import createIconImportProxy from "@github/spark/vitePhosphorIconProxyPlugin";
+
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -18,9 +17,6 @@ export default defineConfig({
     react(),
     tsconfigPaths(),
     tailwindcss(),
-    // DO NOT REMOVE
-    createIconImportProxy() as PluginOption,
-    sparkPlugin() as PluginOption,
   ],
   resolve: {
     alias: {
