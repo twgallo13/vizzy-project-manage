@@ -111,7 +111,7 @@ importers:
         specifier: ^4.1.14
         version: 4.1.14(vite@6.3.6(jiti@2.6.1)(lightningcss@1.30.1))
       '@tanstack/react-query':
-        specifier: ^5.83.1
+        specifier: ^5.90.2
         version: 5.90.2(react@19.2.0)
       '@types/d3':
         specifier: ^7.4.3
