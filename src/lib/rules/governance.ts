@@ -9,6 +9,9 @@ export interface RuleIssue {
 export interface GovernanceResult {
   issues: RuleIssue[]
   severity: "ok" | "warning" | "critical"
+  complianceScore: number
+  lastValidated: string
+  hasBlockingIssues: boolean
 }
 
 export function validateAgainstGovernance(campaign: any): GovernanceResult {
@@ -92,8 +95,26 @@ export function validateAgainstGovernance(campaign: any): GovernanceResult {
   const hasWarning = issues.some(i => i.severity === "warning")
   
   const severity = hasCritical ? "critical" : hasWarning ? "warning" : "ok"
+  
+  // Calculate compliance score
+  const complianceScore = calculateComplianceScore(issues)
 
-  return { issues, severity }
+  return { 
+    issues, 
+    severity,
+    complianceScore,
+    lastValidated: new Date().toISOString(),
+    hasBlockingIssues: hasCritical
+  }
+}
+
+function calculateComplianceScore(issues: RuleIssue[]): number {
+  if (issues.length === 0) return 100
+  
+  const weights = { critical: 30, warning: 10, info: 5 }
+  const totalDeductions = issues.reduce((sum, issue) => sum + weights[issue.severity], 0)
+  
+  return Math.max(0, 100 - totalDeductions)
 }
 
 export function formatIssuesForUI(issues: RuleIssue[]): string {
