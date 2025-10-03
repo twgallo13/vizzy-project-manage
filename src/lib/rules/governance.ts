@@ -90,6 +90,19 @@ export function validateAgainstGovernance(campaign: any): GovernanceResult {
     })
   }
 
+  // Rule: Store-first mandate
+  const hasStoreChannel = channels.includes("stores")
+  const hasStoreTargeting = campaign.targeting?.storeIds?.length > 0 || campaign.targeting?.regions?.length > 0
+  if (hasStoreChannel && !hasStoreTargeting) {
+    issues.push({
+      severity: "warning",
+      code: "MISSING_STORE_TARGETING", 
+      message: "Store channel requires store/region targeting",
+      hint: "Add store targeting in the Stores & Events section",
+      path: "targeting"
+    })
+  }
+
   // Determine overall severity
   const hasCritical = issues.some(i => i.severity === "critical")
   const hasWarning = issues.some(i => i.severity === "warning")
