@@ -126,15 +126,16 @@ Provide a helpful, conversational response focused on marketing insights and act
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl h-[600px] flex flex-col">
-        <DialogHeader>
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
             Chat with Vizzy
           </DialogTitle>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4">
-          <div className="space-y-4 pb-4">
+        <div className="flex-1 min-h-0">
+          <ScrollArea className="h-full pr-4">
+            <div className="space-y-4 pb-4">
             {messages?.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
@@ -196,10 +197,11 @@ Provide a helpful, conversational response focused on marketing insights and act
                 </div>
               </div>
             )}
-          </div>
-        </ScrollArea>
+            </div>
+          </ScrollArea>
+        </div>
 
-        <div className="pt-4 border-t space-y-3">
+        <div className="pt-4 border-t space-y-3 flex-shrink-0">
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
               {error}
