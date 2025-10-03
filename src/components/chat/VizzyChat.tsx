@@ -129,7 +129,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col">
+      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
@@ -137,7 +137,7 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col flex-1 min-h-0">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
           <div className="mb-4">
             <div className="flex flex-wrap gap-1">
               {mockCommands.map((command) => (
@@ -154,29 +154,29 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
             </div>
           </div>
 
-          <ScrollArea className="flex-1 pr-4">
-            <div className="space-y-4">
+          <ScrollArea className="flex-1 pr-2">
+            <div className="space-y-4 pb-4">
               {messages?.map((message) => (
                 <div
                   key={message.id}
-                  className={`flex items-start gap-3 ${
+                  className={`flex items-start gap-2 sm:gap-3 ${
                     message.type === "user" ? "justify-end" : ""
                   }`}
                 >
                   {message.type === "assistant" && (
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Robot className="w-4 h-4 text-primary" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Robot className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                     </div>
                   )}
                   
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
+                    className={`min-w-0 flex-1 max-w-[85%] sm:max-w-[80%] p-2 sm:p-3 rounded-lg ${
                       message.type === "user"
                         ? "bg-primary text-primary-foreground"
                         : "bg-muted"
                     }`}
                   >
-                    <div className="text-sm">{message.content}</div>
+                    <div className="text-xs sm:text-sm break-words whitespace-pre-wrap">{message.content}</div>
                     {message.command && (
                       <Badge variant="secondary" className="mt-2 text-xs">
                         {message.command}
@@ -185,19 +185,19 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
                   </div>
 
                   {message.type === "user" && (
-                    <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                      <User className="w-4 h-4 text-secondary-foreground" />
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
+                      <User className="w-3 h-3 sm:w-4 sm:h-4 text-secondary-foreground" />
                     </div>
                   )}
                 </div>
               ))}
 
               {isLoading && (
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Robot className="w-4 h-4 text-primary" />
+                <div className="flex items-start gap-2 sm:gap-3">
+                  <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                    <Robot className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
                   </div>
-                  <div className="bg-muted p-3 rounded-lg">
+                  <div className="bg-muted p-2 sm:p-3 rounded-lg">
                     <div className="flex items-center gap-1">
                       <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
                       <div className="w-2 h-2 bg-current rounded-full animate-bounce" style={{ animationDelay: "0.1s" }} />
@@ -215,13 +215,14 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={handleKeyPress}
               placeholder="Type a message or command..."
-              className="flex-1"
+              className="flex-1 min-w-0"
               disabled={isLoading}
             />
             <Button 
               onClick={handleSendMessage} 
               disabled={!input.trim() || isLoading}
               size="sm"
+              className="flex-shrink-0"
             >
               <PaperPlaneRight className="w-4 h-4" />
             </Button>
