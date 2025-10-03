@@ -64,6 +64,7 @@ export function VizzyChat({ open, onOpenChange, onCampaignCreated }: VizzyChatPr
   const [lastCreatedCampaign, setLastCreatedCampaign] = useState<any>(null)
   const [lastBrief, setLastBrief] = useState<string>("")
   const [lastCallAt, setLastCallAt] = useState<number>(0)
+  const [cooldownMsg, setCooldownMsg] = useState<string>("")
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const endRef = useRef<HTMLDivElement>(null)
 
@@ -83,12 +84,17 @@ export function VizzyChat({ open, onOpenChange, onCampaignCreated }: VizzyChatPr
 
   // Check if AI calls are throttled (within 10 seconds)
   const isThrottled = () => {
-    const now = Date.now()
-    return (now - lastCallAt) < 10000 // 10 seconds
+  const now = Date.now()
+  return (now - lastCallAt) < 10000 // 10 seconds
   }
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
+    if (isThrottled()) {
+      setCooldownMsg("Please wait a moment…")
+      setTimeout(() => setCooldownMsg("") , 2000)
+      return
+    }
 
     const nowISO = new Date().toISOString()
     const userMessage: ChatMessage = {
@@ -151,9 +157,9 @@ Provide a helpful, conversational response focused on marketing insights and act
   const onCreateWithAI = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim() || loading) return
-
-    // Check for throttling
     if (isThrottled()) {
+      setCooldownMsg("Please wait a moment…")
+      setTimeout(() => setCooldownMsg("") , 2000)
       return
     }
 
@@ -213,12 +219,11 @@ Provide a helpful, conversational response focused on marketing insights and act
 
   const handleRetry = async () => {
     if (!lastBrief || loading) return
-    
-    // Check for throttling
     if (isThrottled()) {
+      setCooldownMsg("Please wait a moment…")
+      setTimeout(() => setCooldownMsg("") , 2000)
       return
     }
-    
     setLoading(true)
     setError(null)
     setSuccessCampaign(null)
@@ -354,12 +359,11 @@ Provide a helpful, conversational response focused on marketing insights and act
         </div>
 
         <div className="pt-4 border-t space-y-3 flex-shrink-0">
-          {isThrottled() && (
+          {cooldownMsg && (
             <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
-              Please wait a moment…
+              {cooldownMsg}
             </div>
           )}
-          
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 p-2 rounded flex items-center justify-between">
               <span>{error}</span>
@@ -374,7 +378,6 @@ Provide a helpful, conversational response focused on marketing insights and act
               )}
             </div>
           )}
-          
           {successCampaign && (
             <div className="text-sm text-green-700 bg-green-50 p-2 rounded border border-green-200 flex items-center justify-between">
               <span>✓ Campaign "{successCampaign.name}" created successfully!</span>
@@ -396,7 +399,6 @@ Provide a helpful, conversational response focused on marketing insights and act
               </div>
             </div>
           )}
-          
           <div className="flex gap-2">
             <Textarea
               placeholder="Ask Vizzy about your campaigns, data, or use commands like /explain..."
@@ -424,7 +426,6 @@ Provide a helpful, conversational response focused on marketing insights and act
               </Button>
             </div>
           </div>
-          
           <div className="text-xs text-muted-foreground">
             Use the sparkle button to create campaigns with AI, or send a message to chat
           </div>
