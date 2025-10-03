@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { useKV } from "@github/spark/hooks"
 import { Button } from "@/components/ui/button"
+import ErrorBoundary from "@/components/common/ErrorBoundary"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
@@ -51,9 +52,10 @@ function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background">
+        {/* Header */}
+        <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center text-primary-foreground font-bold text-sm">
@@ -161,7 +163,8 @@ function App() {
 
       {/* Vizzy Chat Dialog */}
       <VizzyChat open={showVizzyChat} onOpenChange={setShowVizzyChat} />
-    </div>
+      </div>
+    </ErrorBoundary>
   )
 }
 
