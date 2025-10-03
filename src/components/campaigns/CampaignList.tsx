@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react"
-import { listCampaigns, removeCampaign } from "@/lib/store/campaigns"
+import { useEffect, useState, useRef } from "react"
+import { listCampaigns, removeCampaign, persistCampaign } from "@/lib/store/campaigns"
 
 export default function CampaignList({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<any[]>([])
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const refresh = async () => setItems(await listCampaigns())
   useEffect(() => { void refresh() }, [])
 
@@ -19,15 +20,56 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
     URL.revokeObjectURL(url)
   }
 
+  const handleImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    
+    try {
+      const text = await file.text()
+      const importedCampaigns = JSON.parse(text)
+      
+      if (Array.isArray(importedCampaigns)) {
+        // Merge campaigns by persisting each one
+        for (const campaign of importedCampaigns) {
+          if (campaign.id && campaign.name) {
+            await persistCampaign(campaign)
+          }
+        }
+        void refresh()
+        alert(`Imported ${importedCampaigns.length} campaigns`)
+      } else {
+        alert("Invalid JSON format: expected array of campaigns")
+      }
+    } catch (error) {
+      alert("Failed to import campaigns: " + (error instanceof Error ? error.message : "Unknown error"))
+    }
+    
+    // Reset file input
+    if (event.target) event.target.value = ""
+  }
+
   return (
     <div className="space-y-2">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json"
+        onChange={handleImport}
+        style={{ display: 'none' }}
+      />
       {items.length > 0 && (
-        <div className="pb-2 border-b">
+        <div className="pb-2 border-b flex gap-2">
           <button 
             onClick={handleExport}
             className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
           >
             Export
+          </button>
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded"
+          >
+            Import
           </button>
         </div>
       )}
