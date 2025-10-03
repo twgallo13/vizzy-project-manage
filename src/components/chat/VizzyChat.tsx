@@ -3,7 +3,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import { useKV } from "@github/spark/hooks"
+
 import { PaperPlaneRight, Robot, User, Sparkle } from "@phosphor-icons/react"
 import { createCampaignWithAI } from "@/lib/client/createCampaignWithAI"
 import { persistCampaign } from "@/lib/store/campaigns"
@@ -18,6 +18,7 @@ declare global {
 }
 
 const spark = window.spark
+const CHAT_KEY = "vizzy:chat"
 
 interface ChatMessage {
   id: string
@@ -50,7 +51,10 @@ interface VizzyChatProps {
 }
 
 export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
-  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const s = localStorage.getItem(CHAT_KEY)
+    try { return s ? JSON.parse(s) : [] } catch { return [] }
+  })
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -78,6 +82,11 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
     if (messages && messages.length > 0) {
       setTimeout(() => scrollToBottom(), 100)
     }
+  }, [messages])
+
+  // Persist messages to localStorage
+  useEffect(() => { 
+    localStorage.setItem(CHAT_KEY, JSON.stringify(messages)) 
   }, [messages])
 
   // Check if AI calls are throttled (within 10 seconds)
