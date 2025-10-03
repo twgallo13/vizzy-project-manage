@@ -1,21 +1,16 @@
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
-import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
+import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 
-declare global {
-  interface Window {
-    spark: {
-      llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
-      llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
-    }
-  }
+// Global spark API is available
+declare const spark: {
+  llmPrompt: (strings: TemplateStringsArray, ...values: any[]) => string
+  llm: (prompt: string, modelName?: string, jsonMode?: boolean) => Promise<string>
 }
-
-const spark = window.spark
 
 interface ChatMessage {
   id: string
@@ -31,13 +26,11 @@ interface VizzyChatProps {
 }
 
 export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
-  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-history", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
 
-  const mockCommands = ["/explain", "/simulate", "/whatif", "/set", "/export", "/status"]
-
-  const handleSendMessage = async () => {
+  const handleSend = async () => {
     if (!input.trim() || isLoading) return
 
     const userMessage: ChatMessage = {
@@ -53,7 +46,9 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
     setIsLoading(true)
 
     try {
-      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. The user said: "${input.trim()}"
+      // Use the global spark API
+      const userInput = input.trim()
+      const prompt = spark.llmPrompt`You are Vizzy, an AI marketing assistant. The user said: ${userInput}
 
 Available commands:
 - /explain: Explain marketing data and metrics
@@ -75,17 +70,17 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
         content: response,
         timestamp: new Date()
       }
-      
+
       setMessages(prev => [...(prev || []), assistantMessage])
     } catch (error) {
-      console.error("AI response error:", error)
-      const assistantMessage: ChatMessage = {
+      console.error("Chat error:", error)
+      const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
-        content: "I'm sorry, I'm having trouble processing your request right now. Please try again in a moment.",
+        content: "Sorry, I'm having trouble responding right now. Please try again.",
         timestamp: new Date()
       }
-      setMessages(prev => [...(prev || []), assistantMessage])
+      setMessages(prev => [...(prev || []), errorMessage])
     } finally {
       setIsLoading(false)
     }
@@ -94,13 +89,13 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
-      handleSendMessage()
+      handleSend()
     }
   }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] flex flex-col sm:max-w-[95vw] sm:h-[90vh] w-[95vw]">
+      <DialogContent className="max-w-2xl h-[600px] flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Robot className="w-5 h-5 text-primary" />
@@ -108,34 +103,16 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col flex-1 min-h-0 overflow-hidden">
-          <div className="mb-4">
-            <div className="flex flex-wrap gap-1">
-              {mockCommands.map((command) => (
-                <Button
-                  key={command}
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setInput(command + " ")}
-                  className="text-xs"
-                >
-                  {command}
-                </Button>
-              ))}
-            </div>
-          </div>
-
-          <ScrollArea className="flex-1 pr-4">
-            <div className="space-y-4">
-              {(!messages || messages.length === 0) && (
-                <div className="text-center text-muted-foreground py-8">
-                  <Robot className="w-12 h-12 mx-auto mb-4 text-muted-foreground/50" />
-                  <p className="text-sm">Hi! I'm Vizzy, your marketing AI assistant.</p>
-                  <p className="text-xs mt-1">Ask me about your campaigns, data, or use commands like /explain or /simulate</p>
-                </div>
-              )}
-              
-              {(messages || []).map((message) => (
+        <ScrollArea className="flex-1 pr-4">
+          <div className="space-y-4 pb-4">
+            {messages?.length === 0 ? (
+              <div className="text-center text-muted-foreground py-8">
+                <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
+                <p className="text-lg font-medium">Hi! I'm Vizzy, your AI marketing assistant.</p>
+                <p className="text-sm mt-2">Ask me about your campaigns, data, or try commands like /explain or /status</p>
+              </div>
+            ) : (
+              messages?.map((message) => (
                 <div
                   key={message.id}
                   className={`flex gap-3 ${
@@ -148,70 +125,67 @@ Provide a helpful, concise response as Vizzy. If it's a command, acknowledge it 
                     </div>
                   )}
                   
-                  <div
-                    className={`max-w-[80%] rounded-lg px-3 py-2 text-sm ${
-                      message.type === "user"
-                        ? "bg-primary text-primary-foreground ml-auto"
-                        : "bg-muted"
-                    }`}
-                  >
-                    {message.command && (
-                      <div className="text-xs opacity-70 mb-1">
-                        Command: {message.command}
-                      </div>
-                    )}
-                    <div className="whitespace-pre-wrap">{message.content}</div>
-                    <div className="text-xs opacity-70 mt-1">
+                  <div className={`max-w-[80%] ${message.type === "user" ? "order-first" : ""}`}>
+                    <div
+                      className={`p-3 rounded-lg ${
+                        message.type === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {message.timestamp.toLocaleTimeString([], { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}
-                    </div>
+                    </p>
                   </div>
-                  
+
                   {message.type === "user" && (
                     <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                       <User className="w-4 h-4" />
                     </div>
                   )}
                 </div>
-              ))}
-              
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                    <Robot className="w-4 h-4 text-primary" />
-                  </div>
-                  <div className="bg-muted rounded-lg px-3 py-2 text-sm">
-                    <div className="flex items-center gap-1">
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse" />
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-100" />
-                      <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-200" />
-                    </div>
+              ))
+            )}
+
+            {isLoading && (
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Robot className="w-4 h-4 text-primary" />
+                </div>
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
                   </div>
                 </div>
-              )}
-            </div>
-          </ScrollArea>
-
-          <div className="flex gap-2 pt-4 border-t">
-            <Textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Ask Vizzy about your campaigns, data, or use /commands..."
-              className="flex-1 min-h-[44px] max-h-32 resize-none"
-              disabled={isLoading}
-            />
-            <Button 
-              onClick={handleSendMessage}
-              disabled={!input.trim() || isLoading}
-              size="sm"
-              className="px-3"
-            >
-              <PaperPlaneRight className="w-4 h-4" />
-            </Button>
+              </div>
+            )}
           </div>
+        </ScrollArea>
+
+        <div className="flex gap-2 pt-4 border-t">
+          <Textarea
+            placeholder="Ask Vizzy about your campaigns, data, or use commands like /explain..."
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            className="flex-1 min-h-[44px] max-h-[120px] resize-none"
+            disabled={isLoading}
+          />
+          <Button
+            onClick={handleSend}
+            disabled={!input.trim() || isLoading}
+            size="sm"
+            className="h-[44px]"
+          >
+            <PaperPlaneRight className="w-4 h-4" />
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
