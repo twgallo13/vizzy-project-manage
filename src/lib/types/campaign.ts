@@ -1,0 +1,1 @@
+export type { TCampaign } from "../validation/campaignSchema"
