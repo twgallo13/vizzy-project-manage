@@ -375,16 +375,107 @@ export function CampaignPerformance() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="budget">
+        <TabsContent value="budget" className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Budget vs Spend by Platform</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {["Meta", "Google Ads", "TikTok"].map(platform => {
+                    const platformCampaigns = enrichedCampaigns.filter(c => c.platform === platform)
+                    const platformBudget = platformCampaigns.reduce((sum, c) => sum + c.budget, 0)
+                    const platformSpent = platformCampaigns.reduce((sum, c) => sum + c.spent, 0)
+                    const utilization = platformBudget > 0 ? (platformSpent / platformBudget) * 100 : 0
+                    
+                    if (platformBudget === 0) return null
+                    
+                    return (
+                      <div key={platform} className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="font-medium">{platform}</span>
+                          <span>${platformSpent.toLocaleString()} / ${platformBudget.toLocaleString()}</span>
+                        </div>
+                        <Progress value={utilization} className="h-2" />
+                        <div className="text-xs text-muted-foreground">
+                          {utilization.toFixed(1)}% utilized
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Top Performing Campaigns</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {enrichedCampaigns
+                    .sort((a, b) => b.roi - a.roi)
+                    .slice(0, 4)
+                    .map((campaign, index) => (
+                      <div key={campaign.id} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-xs font-medium">
+                            {index + 1}
+                          </div>
+                          <div>
+                            <div className="font-medium text-sm">{campaign.name}</div>
+                            <div className="text-xs text-muted-foreground">{campaign.platform}</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-green-600">{campaign.roi}%</div>
+                          <div className="text-xs text-muted-foreground">ROI</div>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
           <Card>
             <CardHeader>
-              <CardTitle>Budget Analysis</CardTitle>
+              <CardTitle>Budget Optimization Recommendations</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <ChartLine className="w-8 h-8 mx-auto mb-4 opacity-50" />
-                <div>Budget allocation and spend analysis visualization</div>
-                <div className="text-sm mt-2">Including budget pacing, platform distribution, and optimization recommendations</div>
+              <div className="space-y-4">
+                {enrichedCampaigns
+                  .filter(c => c.roi > 300 && c.budgetUtilization < 80)
+                  .slice(0, 2)
+                  .map(campaign => (
+                    <div key={campaign.id} className="flex items-start gap-3 p-3 bg-green-50 rounded-lg">
+                      <TrendUp className="w-4 h-4 text-green-600 mt-0.5" />
+                      <div>
+                        <div className="font-medium text-sm">Increase budget for "{campaign.name}"</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          High ROI ({campaign.roi}%) with only {campaign.budgetUtilization.toFixed(0)}% budget used. 
+                          Consider increasing budget by 25-50% to maximize performance.
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                
+                {enrichedCampaigns
+                  .filter(c => c.roi < 200 && c.budgetUtilization > 70)
+                  .slice(0, 1)
+                  .map(campaign => (
+                    <div key={campaign.id} className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+                      <TrendDown className="w-4 h-4 text-yellow-600 mt-0.5" />
+                      <div>
+                        <div className="font-medium text-sm">Review "{campaign.name}" performance</div>
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Lower ROI ({campaign.roi}%) with high budget utilization ({campaign.budgetUtilization.toFixed(0)}%). 
+                          Consider optimizing targeting or creative elements.
+                        </div>
+                      </div>
+                    </div>
+                  ))}
               </div>
             </CardContent>
           </Card>
