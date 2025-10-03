@@ -1,3 +1,4 @@
+import { CampaignSchema } from "../validation/campaignSchema"
 export async function createCampaignWithAI(brief: string, constraints: any = {}) {
   try {
     const res = await fetch("/api/campaigns/ai", {
@@ -21,7 +22,13 @@ export async function createCampaignWithAI(brief: string, constraints: any = {})
 
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || "Failed to create campaign")
-    return data.campaign
+  let parsed = data.campaign
+  // Validate and coerce defaults
+  let validated = CampaignSchema.parse(parsed)
+  if (!validated.id) validated.id = String(Date.now())
+  if (!validated.createdBy) validated.createdBy = "ai"
+  if (!validated.createdAt) validated.createdAt = new Date().toISOString()
+  return validated
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
       throw new Error("Cannot connect to API server")
