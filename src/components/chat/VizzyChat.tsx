@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
@@ -38,6 +38,26 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successCampaign, setSuccessCampaign] = useState<{ name: string } | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    if (scrollContainerRef.current) {
+      const scrollContainer = scrollContainerRef.current.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTo({
+          top: scrollContainer.scrollHeight,
+          behavior: 'smooth'
+        })
+      }
+    }
+  }
+
+  // Auto-scroll when messages change
+  useEffect(() => {
+    if (messages && messages.length > 0) {
+      setTimeout(() => scrollToBottom(), 100)
+    }
+  }, [messages])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -109,7 +129,20 @@ Provide a helpful, conversational response focused on marketing insights and act
       const campaign = await createCampaignWithAI(input.trim())
       console.log("AI Campaign created:", campaign)
       setSuccessCampaign({ name: campaign?.name || "New Campaign" })
+      
+      // Add success message to chat
+      const successMessage: ChatMessage = {
+        id: (Date.now() + 2).toString(),
+        type: "assistant",
+        content: `✅ Created: ${campaign?.name || "New Campaign"}`,
+        timestamp: new Date()
+      }
+      setMessages(prev => [...(prev || []), successMessage])
+      
       setInput("")
+      
+      // Auto-scroll to bottom after a brief delay to ensure message is rendered
+      setTimeout(() => scrollToBottom(), 100)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create campaign")
     } finally {
@@ -134,7 +167,7 @@ Provide a helpful, conversational response focused on marketing insights and act
         </DialogHeader>
 
         <div className="flex-1 min-h-0">
-          <ScrollArea className="h-full pr-4">
+          <ScrollArea ref={scrollContainerRef} className="h-full pr-4">
             <div className="space-y-4 pb-4">
             {messages?.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
