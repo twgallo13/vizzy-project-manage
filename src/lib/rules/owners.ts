@@ -1,0 +1,1 @@
+export const defaultOwners = { creative: "Abby", social: "Vanezza", stores: "Antonio", approvals: "Theo" }
