@@ -1,10 +1,11 @@
 import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Textarea } from "@/components/ui/textarea"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { useKV } from "@github/spark/hooks"
-import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
+import { PaperPlaneRight, Robot, User, Sparkle } from "@phosphor-icons/react"
+import { createCampaignWithAI } from "@/lib/client/createCampaignWithAI"
 
 declare global {
   interface Window {
@@ -34,6 +35,8 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -90,6 +93,24 @@ Provide a helpful, conversational response focused on marketing insights and act
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
+    }
+  }
+
+  const onCreateWithAI = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!input.trim() || loading) return
+
+    setLoading(true)
+    setError(null)
+
+    try {
+      const campaign = await createCampaignWithAI(input.trim())
+      console.log("AI Campaign created:", campaign)
+      setInput("")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to create campaign")
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -169,22 +190,44 @@ Provide a helpful, conversational response focused on marketing insights and act
           </div>
         </ScrollArea>
 
-        <div className="flex gap-2 pt-4 border-t">
-          <Textarea
-            placeholder="Ask Vizzy about your campaigns, data, or use commands like /explain..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={handleKeyPress}
-            className="flex-1 min-h-[44px] max-h-[120px] resize-none"
-            disabled={isLoading}
-          />
-          <Button
-            onClick={handleSend}
-            disabled={!input.trim() || isLoading}
-            size="sm"
-          >
-            <PaperPlaneRight className="w-4 h-4" />
-          </Button>
+        <div className="pt-4 border-t space-y-3">
+          {error && (
+            <div className="text-sm text-destructive bg-destructive/10 p-2 rounded">
+              {error}
+            </div>
+          )}
+          
+          <div className="flex gap-2">
+            <Textarea
+              placeholder="Ask Vizzy about your campaigns, data, or use commands like /explain..."
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={handleKeyPress}
+              className="flex-1 min-h-[44px] max-h-[120px] resize-none"
+              disabled={isLoading || loading}
+            />
+            <div className="flex flex-col gap-2">
+              <Button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading || loading}
+                size="sm"
+              >
+                <PaperPlaneRight className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={onCreateWithAI}
+                disabled={!input.trim() || isLoading || loading}
+                size="sm"
+                variant="outline"
+              >
+                <Sparkle className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+          
+          <div className="text-xs text-muted-foreground">
+            Use the sparkle button to create campaigns with AI, or send a message to chat
+          </div>
         </div>
       </DialogContent>
     </Dialog>
