@@ -64,23 +64,14 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [lastBrief, setLastBrief] = useState<string>("")
   const [lastCallAt, setLastCallAt] = useState<number>(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const endRef = useRef<HTMLDivElement>(null)
 
-  const scrollToBottom = () => {
-    if (scrollContainerRef.current) {
-      const scrollContainer = scrollContainerRef.current.querySelector('[data-radix-scroll-area-viewport]')
-      if (scrollContainer) {
-        scrollContainer.scrollTo({
-          top: scrollContainer.scrollHeight,
-          behavior: 'smooth'
-        })
-      }
-    }
-  }
+
 
   // Auto-scroll when messages change
   useEffect(() => {
     if (messages && messages.length > 0) {
-      setTimeout(() => scrollToBottom(), 100)
+      endRef.current?.scrollIntoView({ behavior: "smooth" })
     }
   }, [messages])
 
@@ -201,9 +192,6 @@ Provide a helpful, conversational response focused on marketing insights and act
       setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
       
       setInput("")
-      
-      // Auto-scroll to bottom after a brief delay to ensure message is rendered
-      setTimeout(() => scrollToBottom(), 100)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create campaign")
     } finally {
@@ -257,8 +245,6 @@ Provide a helpful, conversational response focused on marketing insights and act
         timestamp: nowISO
       }
       setMessages(prev => [...(prev || []), normalizeMessage(successMessage)])
-      
-      setTimeout(() => scrollToBottom(), 100)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create campaign")
     } finally {
@@ -350,6 +336,8 @@ Provide a helpful, conversational response focused on marketing insights and act
                 </div>
               </div>
             )}
+            
+            <div id="chat-end" ref={endRef} />
             </div>
           </ScrollArea>
         </div>
