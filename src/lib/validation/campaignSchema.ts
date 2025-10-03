@@ -3,6 +3,12 @@ export const CampaignAssetSchema = z.object({
   type: z.string().min(1),
   spec: z.string().min(1)
 })
+export const CampaignOwnersSchema = z.object({
+  creative: z.string().optional(),
+  social: z.string().optional(),
+  stores: z.string().optional(),
+  approvals: z.string().optional()
+})
 export const CampaignSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1),
@@ -16,6 +22,7 @@ export const CampaignSchema = z.object({
   status: z.enum(["Draft","Planned","Live","Archived"]).optional(),
   tags: z.array(z.string()).optional(),
   createdBy: z.enum(["ai","manual"]).optional(),
-  createdAt: z.string().optional()
+  createdAt: z.string().optional(),
+  owners: CampaignOwnersSchema.optional()
 })
 export type TCampaign = z.infer<typeof CampaignSchema>
