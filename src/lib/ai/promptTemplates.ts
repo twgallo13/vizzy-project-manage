@@ -4,6 +4,7 @@ Owners:
 - Social: Vanezza
 - Stores & Events: Antonio
 - Approvals: Theo
+Set owners accordingly: Creative=Abby, Social=Vanezza, Stores=Antonio, Approvals=Theo.
 Store-first: every campaign should reference store regions & in-store impact.
 `
 
