@@ -1,11 +1,14 @@
-import { useEffect, useState, useRef } from "react"
-import { listCampaigns, removeCampaign, persistCampaign } from "@/lib/store/campaigns"
-
 export default function CampaignList({ onOpen }: { onOpen: (id: string) => void }) {
   const [items, setItems] = useState<any[]>([])
+  const [filters, setFilters] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("vizzy:listFilters") || "{}")
+    } catch { return {} }
+  })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const refresh = async () => setItems(await listCampaigns())
   useEffect(() => { void refresh() }, [])
+  useEffect(() => { localStorage.setItem("vizzy:listFilters", JSON.stringify(filters)) }, [filters])
 
   const handleExport = async () => {
     const campaigns = await listCampaigns()
@@ -48,6 +51,13 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
     if (event.target) event.target.value = ""
   }
 
+  // Filtering logic
+  const filteredItems = items.filter(c => {
+    const statusOk = !filters.status || filters.status === "All" || c.status === filters.status
+    const text = (filters.text || "").toLowerCase()
+    const textOk = !text || [c.name, c.objective, ...(c.tags||[])].join(" ").toLowerCase().includes(text)
+    return statusOk && textOk
+  })
   return (
     <div className="space-y-2">
       <input
@@ -57,24 +67,41 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
         onChange={handleImport}
         style={{ display: 'none' }}
       />
-      {items.length > 0 && (
-        <div className="pb-2 border-b flex gap-2">
-          <button 
-            onClick={handleExport}
-            className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
-          >
-            Export
-          </button>
-          <button 
-            onClick={() => fileInputRef.current?.click()}
-            className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded"
-          >
-            Import
-          </button>
-        </div>
-      )}
-      {items.length === 0 && <div className="text-sm text-muted-foreground">No campaigns yet.</div>}
-      {items.map(c => (
+      <div className="flex gap-2 items-center pb-2 border-b">
+        <select
+          className="text-xs rounded border px-2 py-1 bg-gray-50"
+          value={filters.status || "All"}
+          onChange={e => setFilters(f => ({ ...f, status: e.target.value }))}
+        >
+          <option value="All">All</option>
+          <option value="Draft">Draft</option>
+          <option value="Planned">Planned</option>
+          <option value="Live">Live</option>
+          <option value="Archived">Archived</option>
+        </select>
+        <input
+          type="text"
+          className="text-xs rounded border px-2 py-1 bg-gray-50"
+          placeholder="Search name, objective, tags"
+          value={filters.text || ""}
+          onChange={e => setFilters(f => ({ ...f, text: e.target.value }))}
+          style={{ minWidth: 120 }}
+        />
+        <button 
+          onClick={handleExport}
+          className="text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded"
+        >
+          Export
+        </button>
+        <button 
+          onClick={() => fileInputRef.current?.click()}
+          className="text-xs px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded"
+        >
+          Import
+        </button>
+      </div>
+      {filteredItems.length === 0 && <div className="text-sm text-muted-foreground">No campaigns found.</div>}
+      {filteredItems.map(c => (
         <div key={c.id} className="flex items-center justify-between rounded border p-2">
           <div className="text-sm flex-1">
             <div className="flex items-center gap-2">
