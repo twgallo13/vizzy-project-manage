@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TrendUp, TrendDown, Target, ChartLine, Calendar, Users } from "@phosphor-icons/react"
 import { useKV } from "@github/spark/hooks"
+import { seriesForReachByWeek } from "@/lib/store/metrics"
 
 interface Campaign {
   id: string
@@ -144,7 +145,7 @@ export function CampaignPerformance() {
   }))
 
   useEffect(() => {
-    if (!svgRef.current || !enrichedCampaigns.length) return
+    if (!svgRef.current) return
 
     const svg = d3.select(svgRef.current)
     svg.selectAll("*").remove()
@@ -159,50 +160,123 @@ export function CampaignPerformance() {
       .append("g")
       .attr("transform", `translate(${margin.left},${margin.top})`)
 
-    // Prepare data for the selected metric
-    const data = enrichedCampaigns.map(campaign => ({
-      name: campaign.name.substring(0, 15) + (campaign.name.length > 15 ? "..." : ""),
-      value: selectedMetric === "roi" ? campaign.roi : 
-             selectedMetric === "spent" ? campaign.spent :
-             selectedMetric === "conversions" ? campaign.conversions : campaign.impressions
-    }))
+    // Check if we have GA data for time series
+    const weeklyData = seriesForReachByWeek()
+    
+    if (weeklyData.length > 0) {
+      // Render time series line chart from GA data
+      const parseWeek = (weekStr: string) => {
+        const [year, week] = weekStr.split('-W')
+        const date = new Date(parseInt(year), 0, 1 + (parseInt(week) - 1) * 7)
+        return date
+      }
 
-    const xScale = d3.scaleBand()
-      .domain(data.map(d => d.name))
-      .range([0, width])
-      .padding(0.1)
+      const timeData = weeklyData.map(d => ({
+        date: parseWeek(d.week),
+        value: d.value,
+        week: d.week
+      }))
 
-    const yScale = d3.scaleLinear()
-      .domain([0, d3.max(data, d => d.value) as number])
-      .range([height, 0])
+      const xScale = d3.scaleTime()
+        .domain(d3.extent(timeData, d => d.date) as [Date, Date])
+        .range([0, width])
 
-    // Add bars
-    container.selectAll(".bar")
-      .data(data)
-      .enter().append("rect")
-      .attr("class", "bar")
-      .attr("x", d => xScale(d.name)!)
-      .attr("width", xScale.bandwidth())
-      .attr("y", d => yScale(d.value))
-      .attr("height", d => height - yScale(d.value))
-      .attr("fill", "hsl(var(--primary))")
-      .attr("opacity", 0.8)
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(timeData, d => d.value) as number])
+        .range([height, 0])
 
-    // Add axes
-    container.append("g")
-      .attr("transform", `translate(0,${height})`)
-      .call(d3.axisBottom(xScale))
-      .selectAll("text")
-      .style("font-size", "10px")
-      .style("fill", "hsl(var(--muted-foreground))")
-      .attr("transform", "rotate(-45)")
-      .style("text-anchor", "end")
+      const line = d3.line<{date: Date, value: number}>()
+        .x(d => xScale(d.date))
+        .y(d => yScale(d.value))
+        .curve(d3.curveMonotoneX)
 
-    container.append("g")
-      .call(d3.axisLeft(yScale))
-      .selectAll("text")
-      .style("font-size", "12px")
-      .style("fill", "hsl(var(--muted-foreground))")
+      // Add line
+      container.append("path")
+        .datum(timeData)
+        .attr("fill", "none")
+        .attr("stroke", "hsl(var(--primary))")
+        .attr("stroke-width", 2)
+        .attr("d", line)
+
+      // Add dots
+      container.selectAll(".dot")
+        .data(timeData)
+        .enter().append("circle")
+        .attr("class", "dot")
+        .attr("cx", d => xScale(d.date))
+        .attr("cy", d => yScale(d.value))
+        .attr("r", 4)
+        .attr("fill", "hsl(var(--primary))")
+
+      // Add axes
+      container.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale).tickFormat(d3.timeFormat("%b %d")))
+        .selectAll("text")
+        .style("font-size", "10px")
+        .style("fill", "hsl(var(--muted-foreground))")
+
+      container.append("g")
+        .call(d3.axisLeft(yScale))
+        .selectAll("text")
+        .style("font-size", "10px")
+        .style("fill", "hsl(var(--muted-foreground))")
+
+    } else if (enrichedCampaigns.length > 0) {
+      // Fallback to campaign bar chart
+      const data = enrichedCampaigns.map(campaign => ({
+        name: campaign.name.substring(0, 15) + (campaign.name.length > 15 ? "..." : ""),
+        value: selectedMetric === "roi" ? campaign.roi : 
+               selectedMetric === "spent" ? campaign.spent :
+               selectedMetric === "conversions" ? campaign.conversions : campaign.impressions
+      }))
+
+      const xScale = d3.scaleBand()
+        .domain(data.map(d => d.name))
+        .range([0, width])
+        .padding(0.1)
+
+      const yScale = d3.scaleLinear()
+        .domain([0, d3.max(data, d => d.value) as number])
+        .range([height, 0])
+
+      // Add bars
+      container.selectAll(".bar")
+        .data(data)
+        .enter().append("rect")
+        .attr("class", "bar")
+        .attr("x", d => xScale(d.name)!)
+        .attr("width", xScale.bandwidth())
+        .attr("y", d => yScale(d.value))
+        .attr("height", d => height - yScale(d.value))
+        .attr("fill", "hsl(var(--primary))")
+        .attr("opacity", 0.8)
+
+      // Add axes
+      container.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale))
+        .selectAll("text")
+        .style("font-size", "10px")
+        .style("fill", "hsl(var(--muted-foreground))")
+        .attr("transform", "rotate(-45)")
+        .style("text-anchor", "end")
+
+      container.append("g")
+        .call(d3.axisLeft(yScale))
+        .selectAll("text")
+        .style("font-size", "10px")
+        .style("fill", "hsl(var(--muted-foreground))")
+    } else {
+      // Show placeholder message
+      container.append("text")
+        .attr("x", width / 2)
+        .attr("y", height / 2)
+        .attr("text-anchor", "middle")
+        .attr("fill", "hsl(var(--muted-foreground))")
+        .style("font-size", "14px")
+        .text("Import GA CSV to see data")
+    }
 
   }, [enrichedCampaigns, selectedMetric])
 
@@ -353,7 +427,9 @@ export function CampaignPerformance() {
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Performance Comparison</CardTitle>
+                <CardTitle>
+                  {seriesForReachByWeek().length > 0 ? "GA Weekly Reach" : "Performance Comparison"}
+                </CardTitle>
                 <Select value={selectedMetric} onValueChange={setSelectedMetric}>
                   <SelectTrigger className="w-40">
                     <SelectValue />
