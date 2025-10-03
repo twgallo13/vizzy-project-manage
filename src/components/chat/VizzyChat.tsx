@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
 import { nowISO, toLocalHM } from "@/lib/util/dates"
+import { persistCampaign } from "@/lib/store/campaigns"
 
 declare global {
   interface Window {
@@ -29,9 +30,10 @@ interface ChatMessage {
 interface VizzyChatProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  onCampaignCreated?: (campaignId: string) => void
 }
 
-export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
+export function VizzyChat({ open, onOpenChange, onCampaignCreated }: VizzyChatProps) {
   const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -67,10 +69,57 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
     setIsLoading(true)
 
     try {
-      // Use the global spark API
-      const prompt = spark.llmPrompt`You are Vizzy, a helpful AI marketing assistant. The user said: ${input.trim()}
+      // Check if user wants to create a campaign
+      const isCreatingCampaign = /create|new|build.*campaign/i.test(input.trim())
+      
+      if (isCreatingCampaign) {
+        // Use the global spark API for campaign creation
+        const prompt = spark.llmPrompt`You are Vizzy, a campaign creation assistant. The user wants to create a campaign: ${input.trim()}
+
+Generate a campaign based on their request. Respond with JSON in this format:
+{
+  "id": "campaign_" + timestamp,
+  "name": "Campaign Name",
+  "objective": "Campaign objective description",
+  "status": "Draft",
+  "startDate": "YYYY-MM-DD",
+  "endDate": "YYYY-MM-DD",
+  "createdAt": current ISO timestamp
+}
+
+Make sure dates are realistic and the campaign aligns with their request.`
+
+        const response = await spark.llm(prompt, undefined, true) // JSON mode
+        
+        try {
+          const campaignData = JSON.parse(response)
+          campaignData.id = `campaign_${Date.now()}`
+          campaignData.createdAt = nowISO()
+          
+          // Persist the campaign
+          await persistCampaign(campaignData)
+          
+          // Notify parent component
+          if (onCampaignCreated) {
+            onCampaignCreated(campaignData.id)
+          }
+          
+          const assistantMessage: ChatMessage = {
+            id: (Date.now() + 1).toString(),
+            type: "assistant",
+            content: `Great! I've created your campaign "${campaignData.name}". It's been saved as a draft and you can now edit it in the campaign editor.`,
+            timestamp: nowISO()
+          }
+          setMessages(prev => [...(prev || []), assistantMessage])
+        } catch (parseError) {
+          throw new Error("Failed to create campaign from AI response")
+        }
+      } else {
+        // Use the global spark API for regular chat
+        const prompt = spark.llmPrompt`You are Vizzy, a helpful AI marketing assistant. The user said: ${input.trim()}
 
 Available commands:
+- /create or "create campaign": Create a new campaign
 - /simulate: Run campaign simulations
 - /analyze: Analyze performance data
 - /optimize: Suggest optimizations
@@ -80,16 +129,17 @@ Available commands:
 Context: This is a marketing analytics platform called Vizzy.
 Provide a helpful, conversational response focused on marketing insights and actionable advice.`
 
-      const response = await spark.llm(prompt)
-      
-      const assistantMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
-        content: response,
-        timestamp: nowISO()
-      }
+        const response = await spark.llm(prompt)
+        
+        const assistantMessage: ChatMessage = {
+          id: (Date.now() + 1).toString(),
+          type: "assistant",
+          content: response,
+          timestamp: nowISO()
+        }
 
-      setMessages(prev => [...(prev || []), assistantMessage])
+        setMessages(prev => [...(prev || []), assistantMessage])
+      }
     } catch (error) {
       const errorMessage: ChatMessage = {
         id: (Date.now() + 1).toString(),
@@ -126,7 +176,7 @@ Provide a helpful, conversational response focused on marketing insights and act
               <div className="text-center text-muted-foreground py-8">
                 <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
                 <p className="text-lg font-medium">Hi! I'm Vizzy, your AI marketing assistant.</p>
-                <p className="text-sm mt-2">Ask me about your campaigns, data, or try commands like /explain or /status</p>
+                <p className="text-sm mt-2">Ask me about campaigns, create new ones, or try commands like /explain or /status</p>
               </div>
             ) : (
               (messages ?? []).map((message) => (
@@ -185,7 +235,7 @@ Provide a helpful, conversational response focused on marketing insights and act
 
         <div className="flex gap-2 pt-4 border-t">
           <Textarea
-            placeholder="Ask Vizzy about your campaigns, data, or use commands like /explain..."
+            placeholder="Ask Vizzy to create campaigns, analyze data, or use commands like /explain..."
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={handleKeyPress}
