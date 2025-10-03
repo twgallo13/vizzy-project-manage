@@ -1,12 +1,13 @@
-import { useState, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
-import { useKV } from "@github/spark/hooks"
 import { PaperPlaneRight, Robot, User } from "@phosphor-icons/react"
-import { nowISO, toLocalHM } from "@/lib/util/dates"
+import { toLocalHM } from "@/lib/util/dates"
 import { persistCampaign } from "@/lib/store/campaigns"
+import { useChatThread, useAssistantResponse } from "@/hooks/useChatThread"
+import { toast } from "sonner"
 
 declare global {
   interface Window {
@@ -19,14 +20,6 @@ declare global {
 
 const spark = window.spark
 
-interface ChatMessage {
-  id: string
-  type: "user" | "assistant"
-  content: string
-  timestamp: string
-  command?: string
-}
-
 interface VizzyChatProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -34,53 +27,46 @@ interface VizzyChatProps {
 }
 
 export function VizzyChat({ open, onOpenChange, onCampaignCreated }: VizzyChatProps) {
-  const [messages, setMessages] = useKV<ChatMessage[]>("vizzy-chat-messages", [])
   const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
-
-  // Normalize loaded messages to ensure consistent timestamp format
+  const scrollAreaRef = useRef<HTMLDivElement>(null)
+  
+  // Use persistent chat thread
+  const { threadId, messages, isLoading, sendMessage, error } = useChatThread({ autoLoad: open })
+  const { addAssistantMessage } = useAssistantResponse(threadId)
+  
+  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    const messageArray = messages ?? []
-    if (messageArray.length > 0) {
-      const needsNormalization = messageArray.some(m => !m.timestamp || typeof m.timestamp !== 'string')
-      if (needsNormalization) {
-        const normalizedMessages = messageArray.map(m => ({
-          ...m,
-          id: String(m.id ?? Date.now()),
-          timestamp: m.timestamp ? String(m.timestamp) : nowISO()
-        }))
-        setMessages(normalizedMessages)
+    const scrollArea = scrollAreaRef.current
+    if (scrollArea && messages.length > 0) {
+      const scrollContainer = scrollArea.querySelector('[data-radix-scroll-area-viewport]')
+      if (scrollContainer) {
+        scrollContainer.scrollTop = scrollContainer.scrollHeight
       }
     }
-  }, [messages, setMessages])
+  }, [messages])
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
-
-    const userMessage: ChatMessage = {
-      id: Date.now().toString(),
-      type: "user",
-      content: input.trim(),
-      timestamp: nowISO()
-    }
-
-    setMessages(prev => [...(prev || []), userMessage])
+    
+    const userInput = input.trim()
     setInput("")
-    setIsLoading(true)
 
     try {
+      // Send user message via persistent storage
+      await sendMessage(userInput)
+      
       // Check if user wants to create a campaign
-      const isCreatingCampaign = /create|new|build.*campaign/i.test(input.trim())
+      const isCreatingCampaign = /create|new|build.*campaign/i.test(userInput)
       
       if (isCreatingCampaign) {
         // Use the global spark API for campaign creation
-        const prompt = spark.llmPrompt`You are Vizzy, a campaign creation assistant. The user wants to create a campaign: ${input.trim()}
+        const prompt = spark.llmPrompt`You are Vizzy, a campaign creation assistant. The user wants to create a campaign: ${userInput}
 
 Generate a campaign based on their request. Respond with JSON in this format:
 {
   "id": "campaign_" + timestamp,
   "name": "Campaign Name",
-  "objective": "Campaign objective description",
+  "objective": "Campaign objective description", 
   "status": "Draft",
   "startDate": "YYYY-MM-DD",
   "endDate": "YYYY-MM-DD",
@@ -94,7 +80,7 @@ Make sure dates are realistic and the campaign aligns with their request.`
         try {
           const campaignData = JSON.parse(response)
           campaignData.id = `campaign_${Date.now()}`
-          campaignData.createdAt = nowISO()
+          campaignData.createdAt = new Date().toISOString()
           
           // Persist the campaign
           await persistCampaign(campaignData)
@@ -104,19 +90,17 @@ Make sure dates are realistic and the campaign aligns with their request.`
             onCampaignCreated(campaignData.id)
           }
           
-          const assistantMessage: ChatMessage = {
-            id: (Date.now() + 1).toString(),
-            type: "assistant",
-            content: `Great! I've created your campaign "${campaignData.name}". It's been saved as a draft and you can now edit it in the campaign editor.`,
-            timestamp: nowISO()
-          }
-          setMessages(prev => [...(prev || []), assistantMessage])
+          // Add assistant response to persistent chat
+          await addAssistantMessage(`Great! I've created your campaign "${campaignData.name}". It's been saved as a draft and you can now edit it in the campaign editor.`)
+          
+          toast.success(`Campaign "${campaignData.name}" created successfully!`)
         } catch (parseError) {
-          throw new Error("Failed to create campaign from AI response")
+          await addAssistantMessage("I had trouble creating that campaign. Could you try describing it differently?")
+          toast.error("Failed to create campaign")
         }
       } else {
         // Use the global spark API for regular chat
-        const prompt = spark.llmPrompt`You are Vizzy, a helpful AI marketing assistant. The user said: ${input.trim()}
+        const prompt = spark.llmPrompt`You are Vizzy, a helpful AI marketing assistant. The user said: ${userInput}
 
 Available commands:
 - /create or "create campaign": Create a new campaign
@@ -131,25 +115,13 @@ Provide a helpful, conversational response focused on marketing insights and act
 
         const response = await spark.llm(prompt)
         
-        const assistantMessage: ChatMessage = {
-          id: (Date.now() + 1).toString(),
-          type: "assistant",
-          content: response,
-          timestamp: nowISO()
-        }
-
-        setMessages(prev => [...(prev || []), assistantMessage])
+        // Add assistant response to persistent chat
+        await addAssistantMessage(response)
       }
     } catch (error) {
-      const errorMessage: ChatMessage = {
-        id: (Date.now() + 1).toString(),
-        type: "assistant",
-        content: "Sorry, I'm having trouble responding right now. Please try again.",
-        timestamp: nowISO()
-      }
-      setMessages(prev => [...(prev || []), errorMessage])
-    } finally {
-      setIsLoading(false)
+      console.error('Chat error:', error)
+      await addAssistantMessage("Sorry, I'm having trouble responding right now. Please try again.")
+      toast.error("Chat error occurred")
     }
   }
 
@@ -172,48 +144,72 @@ Provide a helpful, conversational response focused on marketing insights and act
 
         <ScrollArea className="flex-1 pr-4">
           <div className="space-y-4 pb-4">
-            {(messages ?? []).length === 0 ? (
+            {error && (
+              <div className="text-center text-red-500 py-2">
+                <p className="text-sm">{error}</p>
+              </div>
+            )}
+            
+            {messages.length === 0 ? (
               <div className="text-center text-muted-foreground py-8">
                 <Robot className="w-12 h-12 mx-auto mb-4 text-primary" />
                 <p className="text-lg font-medium">Hi! I'm Vizzy, your AI marketing assistant.</p>
-                <p className="text-sm mt-2">Ask me about campaigns, create new ones, or try commands like /explain or /status</p>
+                <p className="text-sm mt-2">Ask me to create campaigns, analyze data, or try commands like /explain or /status</p>
               </div>
             ) : (
-              (messages ?? []).map((message) => (
+              messages.map((message) => (
                 <div
-                  key={message.id}
+                  key={message.id || message.clientMsgId}
                   className={`flex gap-3 ${
-                    message.type === "user" ? "justify-end" : "justify-start"
+                    message.author === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  {message.type === "assistant" && (
+                  {message.author === "assistant" && (
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                       <Robot className="w-4 h-4 text-primary" />
                     </div>
                   )}
                   
-                  <div className={`max-w-[80%] ${message.type === "user" ? "order-first" : ""}`}>
+                  <div className={`max-w-[80%] ${message.author === "user" ? "order-first" : ""}`}>
                     <div
                       className={`p-3 rounded-lg ${
-                        message.type === "user"
+                        message.author === "user"
                           ? "bg-primary text-primary-foreground"
                           : "bg-muted"
-                      }`}
+                      } ${message.pending ? "opacity-60" : ""}`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">{message.content.text}</p>
+                      {message.pending && (
+                        <p className="text-xs mt-1 opacity-70">Sending...</p>
+                      )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {toLocalHM(message.timestamp)}
+                      {toLocalHM(message.createdAt)}
                     </p>
                   </div>
 
-                  {message.type === "user" && (
+                  {message.author === "user" && (
                     <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
                       <User className="w-4 h-4" />
                     </div>
                   )}
                 </div>
               ))
+            )}
+
+            {isLoading && (
+              <div className="flex gap-3 justify-start">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <Robot className="w-4 h-4 text-primary" />
+                </div>
+                <div className="bg-muted p-3 rounded-lg">
+                  <div className="flex gap-1">
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <div className="w-2 h-2 bg-current rounded-full animate-bounce" />
+                  </div>
+                </div>
+              </div>
             )}
 
             {isLoading && (
