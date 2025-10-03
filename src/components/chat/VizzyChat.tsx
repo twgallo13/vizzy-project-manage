@@ -57,6 +57,7 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
   const [successCampaign, setSuccessCampaign] = useState<{ name: string } | null>(null)
   const [lastCreatedCampaign, setLastCreatedCampaign] = useState<any>(null)
   const [lastBrief, setLastBrief] = useState<string>("")
+  const [lastCallAt, setLastCallAt] = useState<number>(0)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const scrollToBottom = () => {
@@ -77,6 +78,12 @@ export function VizzyChat({ open, onOpenChange }: VizzyChatProps) {
       setTimeout(() => scrollToBottom(), 100)
     }
   }, [messages])
+
+  // Check if AI calls are throttled (within 10 seconds)
+  const isThrottled = () => {
+    const now = Date.now()
+    return (now - lastCallAt) < 10000 // 10 seconds
+  }
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return
@@ -143,11 +150,17 @@ Provide a helpful, conversational response focused on marketing insights and act
     e.preventDefault()
     if (!input.trim() || loading) return
 
+    // Check for throttling
+    if (isThrottled()) {
+      return
+    }
+
     const brief = input.trim()
     setLoading(true)
     setError(null)
     setSuccessCampaign(null)
     setLastBrief(brief)
+    setLastCallAt(Date.now())
 
     try {
       const campaign = await createCampaignWithAI(brief)
@@ -185,9 +198,15 @@ Provide a helpful, conversational response focused on marketing insights and act
   const handleRetry = async () => {
     if (!lastBrief || loading) return
     
+    // Check for throttling
+    if (isThrottled()) {
+      return
+    }
+    
     setLoading(true)
     setError(null)
     setSuccessCampaign(null)
+    setLastCallAt(Date.now())
 
     try {
       const campaign = await createCampaignWithAI(lastBrief)
@@ -302,13 +321,19 @@ Provide a helpful, conversational response focused on marketing insights and act
         </div>
 
         <div className="pt-4 border-t space-y-3 flex-shrink-0">
+          {isThrottled() && (
+            <div className="text-sm text-muted-foreground bg-muted/50 p-2 rounded">
+              Please wait a moment…
+            </div>
+          )}
+          
           {error && (
             <div className="text-sm text-destructive bg-destructive/10 p-2 rounded flex items-center justify-between">
               <span>{error}</span>
               {lastBrief && (
                 <button
                   onClick={handleRetry}
-                  disabled={loading}
+                  disabled={loading || isThrottled()}
                   className="text-destructive hover:text-destructive/80 text-xs underline ml-2"
                 >
                   Retry
@@ -358,7 +383,7 @@ Provide a helpful, conversational response focused on marketing insights and act
               </Button>
               <Button
                 onClick={onCreateWithAI}
-                disabled={!input.trim() || isLoading || loading}
+                disabled={!input.trim() || isLoading || loading || isThrottled()}
                 size="sm"
                 variant="outline"
               >
