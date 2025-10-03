@@ -11,9 +11,13 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
       {items.length === 0 && <div className="text-sm text-muted-foreground">No campaigns yet.</div>}
       {items.map(c => (
         <div key={c.id} className="flex items-center justify-between rounded border p-2">
-          <div className="text-sm">
-            <div className="font-medium">{c.name || "Untitled"}</div>
+          <div className="text-sm flex-1">
+            <div className="flex items-center gap-2">
+              <div className="font-medium">{c.name || "Untitled"}</div>
+              {c.status && <span className="text-xs px-1.5 py-0.5 rounded bg-gray-100 text-gray-700">{c.status}</span>}
+            </div>
             <div className="text-xs text-muted-foreground">{new Date(c.createdAt || Date.now()).toLocaleString()}</div>
+            {c.tags && c.tags.length > 0 && <div className="text-xs text-muted-foreground mt-1">{c.tags.join(", ")}</div>}
           </div>
           <div className="flex gap-2">
             <button className="text-xs underline" onClick={() => onOpen(c.id)}>Open</button>
