@@ -37,6 +37,12 @@ function normalizeMessage(m: ChatMessage): ChatMessage & { timestamp: Date } {
   return { ...m, timestamp: toDate(m.timestamp) }
 }
 
+function formatTime(ts: Date | string | number): string {
+  const d = ts instanceof Date ? ts : new Date(ts)
+  if (isNaN(d.getTime())) return ""
+  return d.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+}
+
 interface VizzyChatProps {
   open: boolean
   onOpenChange: (open: boolean) => void
@@ -211,10 +217,7 @@ Provide a helpful, conversational response focused on marketing insights and act
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {normalizeMessage(message).timestamp.toLocaleTimeString([], { 
-                        hour: '2-digit', 
-                        minute: '2-digit' 
-                      })}
+                      {formatTime(message.timestamp)}
                     </p>
                   </div>
 
