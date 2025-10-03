@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { listCampaigns, removeCampaign } from "../../lib/store/campaigns"
+import { ContextBadge } from "./ContextBadge"
 
 type Campaign = {
   id: string
@@ -8,6 +9,8 @@ type Campaign = {
   objective?: string
   status?: "Draft" | "Planned" | "Live" | "Archived"
   tags?: string[]
+  startDate?: string
+  endDate?: string
 }
 
 export default function CampaignList({ onOpen }: { onOpen: (id: string) => void }) {
@@ -60,7 +63,10 @@ export default function CampaignList({ onOpen }: { onOpen: (id: string) => void 
       {filtered.map(c => (
         <div key={c.id} className="flex items-center justify-between rounded border p-2">
           <div className="text-sm">
-            <div className="font-medium">{c.name || "Untitled"}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{c.name || "Untitled"}</span>
+              <ContextBadge campaign={c} />
+            </div>
             <div className="text-xs text-muted-foreground">
               {(c.createdAt && new Date(c.createdAt).toLocaleString()) || ""}
               {c.status ? ` • ${c.status}` : ""}

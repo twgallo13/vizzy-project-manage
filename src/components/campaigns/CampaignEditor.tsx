@@ -6,6 +6,7 @@ import { validateAgainstGovernance } from "@/lib/rules/governance"
 import { GovernancePanel } from "./GovernancePanel"
 import { StoreTargeting } from "./StoreTargeting"
 import { WrikeExport } from "./WrikeExport"
+import { ContextBadge } from "./ContextBadge"
 
 export default function CampaignEditor({ id, onClose }: { id: string; onClose?: ()=>void }) {
   const [c, setC] = useState<any | null>(null)
@@ -114,6 +115,7 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
         )}
       </div>
       <input className="w-full rounded border p-2" value={c.name || ""} onChange={e=>setC({ ...c, name:e.target.value })} placeholder="Campaign name" />
+      <ContextBadge campaign={c} />
       <textarea className="w-full rounded border p-2" value={c.objective || ""} onChange={e=>setC({ ...c, objective:e.target.value })} placeholder="Objective" />
       <input className="w-full rounded border p-2" value={(c.channels||[]).join(", ")} onChange={e=>setC({ ...c, channels:e.target.value.split(",").map((x:string)=>x.trim()).filter(Boolean) })} placeholder="channels (comma separated)" />
       <div className="grid grid-cols-2 gap-2">

@@ -1,3 +1,5 @@
+import { activeTriggers } from '../context/triggers'
+
 export const STAFF_RULES = `
 Owners:
 - Creative: Abby
@@ -20,7 +22,9 @@ ESCALATION REQUIRED: Any governance override needs business justification and ap
 These rules are NON-NEGOTIABLE without proper escalation process.
 `
 
-export function buildCampaignPrompt(brief: string, constraints: any) {
+export function buildCampaignPrompt(brief: string, constraints: any, campaignStartDate?: string, campaignEndDate?: string) {
+  const contextInfo = getActiveContextInfo(campaignStartDate, campaignEndDate)
+  
   return `
 You are a marketing planner for Shiekh. Follow STAFF_RULES and GOVERNANCE_RULES. Respond with ONLY valid JSON:
 {name, objective, channels, audience, startDate, endDate, assets:[{type,spec}], notes}
@@ -31,6 +35,11 @@ ${STAFF_RULES}
 GOVERNANCE_RULES:
 ${GOVERNANCE_RULES}
 
+${contextInfo ? `CONTEXTUAL AWARENESS:
+${contextInfo}
+Consider this context when planning campaigns - leverage relevant sports/cultural moments for maximum impact.
+` : ''}
+
 Brief:
 ${brief}
 
@@ -39,4 +48,17 @@ ${JSON.stringify(constraints)}
 
 IMPORTANT: Ensure all generated campaigns comply with governance rules to avoid blocking issues.
 `.trim()
+}
+
+function getActiveContextInfo(startDate?: string, endDate?: string): string {
+  if (!startDate || !endDate) return ''
+  
+  const campaign = { startDate, endDate }
+  const triggers = activeTriggers(campaign)
+  
+  if (triggers.length === 0) return ''
+  
+  return `Active contexts for this campaign period:
+${triggers.map(t => `• ${t.label}: ${t.note || 'Consider timing and relevance'}`).join('\n')}
+`
 }
