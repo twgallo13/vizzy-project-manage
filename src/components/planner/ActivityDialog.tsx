@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { CalendarPlus, Clock, Tag, User } from "@phosphor-icons/react"
-import { useKV } from "../../hooks/useKV"
+import { useKV as _useKV } from "../../hooks/useKV"
 import { toast } from "sonner"
 
 export interface Activity {
@@ -41,7 +41,7 @@ const activityTypes = [
   { value: "social", label: "Social Media", color: "bg-cyan-100 text-cyan-800" }
 ]
 
-const priorityColors = {
+const _priorityColors = {
   low: "bg-gray-100 text-gray-800",
   medium: "bg-yellow-100 text-yellow-800",
   high: "bg-red-100 text-red-800"

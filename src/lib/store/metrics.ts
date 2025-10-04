@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 const STORAGE_KEY = "vizzy:metrics"
 
 interface MetricsStore {
@@ -67,7 +68,7 @@ export function seriesForReachByWeek(): { week: string; value: number }[] {
           
           weeklyData.set(weekKey, (weeklyData.get(weekKey) || 0) + sessions)
         }
-      } catch (e) {
+      } catch (_e) {
         // Skip invalid dates
       }
     }

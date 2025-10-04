@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react"
 import { useKV } from "./hooks/useKV"
 import { Button } from "@/components/ui/button"

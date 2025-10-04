@@ -95,7 +95,7 @@ Make sure dates are realistic and the campaign aligns with their request.`
           await addAssistantMessage(`Great! I've created your campaign "${campaignData.name}". It's been saved as a draft and you can now edit it in the campaign editor.`)
           
           toast.success(`Campaign "${campaignData.name}" created successfully!`)
-        } catch (parseError) {
+        } catch (_parseError) {
           await addAssistantMessage("I had trouble creating that campaign. Could you try describing it differently?")
           toast.error("Failed to create campaign")
         }

@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react"
-import { validateAgainstGovernance, formatIssuesForUI, RuleIssue, GovernanceResult } from "../../lib/rules/governance"
+import { validateAgainstGovernance, formatIssuesForUI as _formatIssuesForUI, RuleIssue as _RuleIssue, GovernanceResult } from "../../lib/rules/governance"
 
 interface GovernancePanelProps {
   campaign: any

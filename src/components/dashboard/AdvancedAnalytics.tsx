@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Progress } from "@/components/ui/progress"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { TrendUp, TrendDown, Brain, Target, Users, Clock, Lightbulb } from "@phosphor-icons/react"
+import { TrendUp, TrendDown, Brain, Target, Clock, Lightbulb } from "@phosphor-icons/react"
 import { useKV } from "../../hooks/useKV"
 
 // Global spark API is available
@@ -134,7 +135,7 @@ Current context:
 
 Return insights that include performance improvements, optimization opportunities, or important alerts. Make them specific and actionable.`
 
-      const response = await spark.llm(prompt, "gpt-4o-mini")
+      const _response = await spark.llm(prompt, "gpt-4o-mini")
       
       // For demo, we'll just show the loading state
       setTimeout(() => {

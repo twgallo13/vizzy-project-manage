@@ -23,9 +23,9 @@ export async function createCampaignWithAI(brief: string, constraints: any = {})
 
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || "Failed to create campaign")
-  let parsed = data.campaign
+  const parsed = data.campaign
   // Validate and coerce defaults
-  let validated = CampaignSchema.parse(parsed)
+  const validated = CampaignSchema.parse(parsed)
   if (!validated.id) validated.id = String(Date.now())
   if (!validated.createdBy) validated.createdBy = "ai"
   if (!validated.createdAt) validated.createdAt = new Date().toISOString()

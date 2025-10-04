@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react"
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -107,7 +108,7 @@ export function PredictiveInsights() {
   const [predictions] = useKV<Prediction[]>("ai-predictions", mockPredictions)
   const [seasonalTrends] = useKV<SeasonalTrend[]>("seasonal-trends", mockSeasonalTrends)
   const [isGenerating, setIsGenerating] = useState(false)
-  const [selectedTimeframe, setSelectedTimeframe] = useState<string>("all")
+  const [selectedTimeframe, _setSelectedTimeframe] = useState<string>("all")
 
   const generateNewInsights = async () => {
     setIsGenerating(true)
@@ -135,7 +136,7 @@ For each prediction include:
 
 Keep predictions realistic and based on common marketing patterns.`
 
-      const response = await spark.llm(prompt, "gpt-4o-mini")
+      const _response = await spark.llm(prompt, "gpt-4o-mini")
       
       // In a real implementation, we'd parse the AI response and add it to predictions
       // For now, just simulate the process

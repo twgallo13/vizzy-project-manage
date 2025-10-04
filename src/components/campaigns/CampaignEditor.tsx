@@ -99,7 +99,7 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
         </button>
         {showAssets && (
           <div className="flex gap-1 flex-wrap">
-            {COMMON_ASSETS.map((a, i) => (
+            {COMMON_ASSETS.map((a, _i) => (
               <button
                 key={a.type + a.spec}
                 className="border rounded px-2 py-1 text-xs bg-muted hover:bg-primary/10"
@@ -166,7 +166,7 @@ export default function CampaignEditor({ id, onClose }: { id: string; onClose?: 
             if (!canSave) return
             try {
               // Prepare campaign for save
-              let campaignToSave = { ...c }
+              const campaignToSave = { ...c }
               
               // Auto-prepend [Partner] for partner events if not already there
               if (campaignToSave.targeting?.eventType === "partner" && 

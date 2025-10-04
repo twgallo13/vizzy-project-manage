@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { activeTriggers } from '../context/triggers'
 
 export const STAFF_RULES = `

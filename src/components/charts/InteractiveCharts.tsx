@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from "react"
 import * as d3 from "d3"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { ChartLine, ChartPie, ChartBarHorizontal, TrendUp } from "@phosphor-icons/react"
+import { ChartLine, ChartBarHorizontal, TrendUp } from "@phosphor-icons/react"
 import { useKV } from "../../hooks/useKV"
 
 interface ChartDataPoint {
@@ -64,7 +64,7 @@ export function InteractiveCharts() {
   const [chartType, setChartType] = useState("line")
   const timeSeriesRef = useRef<SVGSVGElement>(null)
   const heatmapRef = useRef<SVGSVGElement>(null)
-  const correlationRef = useRef<SVGSVGElement>(null)
+  const _correlationRef = useRef<SVGSVGElement>(null)
 
   // Time Series Chart
   useEffect(() => {

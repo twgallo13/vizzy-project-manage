@@ -129,7 +129,7 @@ export function CampaignPerformance() {
     }
   }
 
-  const getPlatformIcon = (platform: string) => {
+  const getPlatformIcon = (_platform: string) => {
     // In a real app, you'd use actual platform icons
     return <Target className="w-4 h-4" />
   }
