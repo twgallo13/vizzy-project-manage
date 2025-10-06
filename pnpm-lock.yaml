@@ -8,9 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@github/spark':
-        specifier: ^0.39.0
-        version: 0.39.144(react@19.2.0)(vite@6.3.6(jiti@2.6.1)(lightningcss@1.30.1))
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@19.2.0)
@@ -192,8 +189,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.2.0(@types/react@19.2.0))(@types/react@19.2.0)(react-dom@19.2.0(react@19.2.0))(react@19.2.0)
       zod:
-        specifier: ^3.25.76
-        version: 3.25.76
+        specifier: ^4.1.11
+        version: 4.1.11
     devDependencies:
       '@eslint/js':
         specifier: ^9.36.0
@@ -583,12 +580,6 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
-
-  '@github/spark@0.39.144':
-    resolution: {integrity: sha512-5QZgDMiggdFq+Gv+0fbonUnvrINDYDCaq1weJHDRdEArcVCicgvQT9zPeIjrVgJm9fJVM3PUVDx5t8oSW/v/HQ==}
-    peerDependencies:
-      react: ^19.0.0
-      vite: ^6.2.0
 
   '@heroicons/react@2.2.0':
     resolution: {integrity: sha512-LMcepvRaS9LYHJGsF0zzmgKCUim/X3N/DQKc4jepAXJ7l8QxJ1PmxJzqplF2Z3FE4PqBAIGyJAQ/w4B5dsqbtQ==}
@@ -2995,6 +2986,9 @@ packages:
   zod@3.25.76:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
+  zod@4.1.11:
+    resolution: {integrity: sha512-WPsqwxITS2tzx1bzhIKsEs19ABD5vmCVa4xBo2tq/SrV4RNZtfws1EnCWQXM6yh8bD08a1idvkB5MZSBiZsjwg==}
+
 snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
@@ -3305,12 +3299,6 @@ snapshots:
       react-dom: 19.2.0(react@19.2.0)
 
   '@floating-ui/utils@0.2.10': {}
-
-  '@github/spark@0.39.144(react@19.2.0)(vite@6.3.6(jiti@2.6.1)(lightningcss@1.30.1))':
-    dependencies:
-      octokit: 5.0.3
-      react: 19.2.0
-      vite: 6.3.6(jiti@2.6.1)(lightningcss@1.30.1)
 
   '@heroicons/react@2.2.0(react@19.2.0)':
     dependencies:
@@ -5713,19 +5701,6 @@ snapshots:
       jiti: 2.6.1
       lightningcss: 1.30.1
 
-  vite@6.3.6(jiti@2.6.1)(lightningcss@1.30.1):
-    dependencies:
-      esbuild: 0.25.10
-      fdir: 6.5.0(picomatch@4.0.3)
-      picomatch: 4.0.3
-      postcss: 8.5.6
-      rollup: 4.52.4
-      tinyglobby: 0.2.15
-    optionalDependencies:
-      fsevents: 2.3.3
-      jiti: 2.6.1
-      lightningcss: 1.30.1
-
   which@2.0.2:
     dependencies:
       isexe: 2.0.0
@@ -5743,3 +5718,5 @@ snapshots:
       zod: 3.25.76
 
   zod@3.25.76: {}
+
+  zod@4.1.11: {}
